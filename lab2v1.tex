@@ -1,0 +1,329 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{caption}
+
+\title{\textbf{Laboratory Report 2\\AI Enabled Control Engineering}}
+\author{Group Members}
+\date{July 2026}
+
+\begin{document}
+
+\maketitle
+
+\section*{Group Member Contributions}
+The percentages must sum to 100\%. Group size does not change the grading criteria or total group score; the declared contribution percentages may affect the relative individual scores within the group.
+
+\begin{table}[h!]
+    \centering
+    \caption{Contribution of each group member}
+    \begin{tabular}{llc}
+        \toprule
+        \textbf{Member} & \textbf{Name} & \textbf{Contribution (\%)} \\
+        \midrule
+        Member 1 & [Name 1] & [X]\% \\
+        Member 2 & [Name 2] & [X]\% \\
+        Member 3 & [Name 3] & [X]\% \\
+        Member 4 & [Name 4] & [X]\% \\
+        \midrule
+        & \textbf{Total} & \textbf{100\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Part I: Continuous and Discrete LQR Gain Calculation}
+
+\subsection{Model, state convention and weights}
+The state vector convention is:
+\begin{equation}
+    x = \begin{bmatrix} \theta & \dot{\theta} & \alpha & \dot{\alpha} \end{bmatrix}^T
+\end{equation}
+The continuous linearised PWM-input model is $\dot{x} = Ax + Bu$, where:
+\begin{equation}
+    A = \begin{bmatrix} 
+        0 & 1 & 0 & 0 \\ 
+        0 & -11.3205 & -49.9955 & 0.4820 \\ 
+        0 & 0 & 0 & 1 \\ 
+        0 & -1.6510 & 171.2602 & 16.9206 
+    \end{bmatrix}, \quad
+    B = \begin{bmatrix} 
+        0 \\ 0.8171 \\ 0 \\ -1.2213 
+    \end{bmatrix}
+\end{equation}
+
+The selected weighting matrices and sample time are:
+\begin{align*}
+    Q &= \text{diag}([q_1, q_2, q_3, q_4]) \\
+    R &= [r] \\
+    T_s &= 0.005 \text{ s}
+\end{align*}
+
+\subsection{Continuous-time CARE calculation}
+The infinite-horizon cost performance index is:
+\begin{equation}
+    J_c = \int_0^\infty (x^T Q x + u^T R u) dt
+\end{equation}
+The continuous algebraic Riccati equation (CARE) is solved using Python (\texttt{scipy.linalg.solve\_continuous\_are}):
+\begin{equation}
+    A^T P_c + P_c A - P_c B R^{-1} B^T P_c + Q = 0
+\end{equation}
+The final optimal feedback gain is derived as $K_c = R^{-1} B^T P_c$ to apply the control law $u = -K_c x$.
+
+\begin{table}[h!]
+    \centering
+    \caption{Continuous-design LQR result}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Quantity} & \textbf{Numerical result} \\
+        \midrule
+        $K_{c,\theta}$ & [Value] \\
+        $K_{c,\dot{\theta}}$ & [Value] \\
+        $K_{c,\alpha}$ & [Value] \\
+        $K_{c,\dot{\alpha}}$ & [Value] \\
+        Closed-loop eigenvalues of $A - BK_c$ & [Values] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{ZOH discretisation and DARE calculation}
+Using zero-order-hold (ZOH) discretisation with $T_s = 0.005$ s, the discrete-time model is $x_{k+1} = A_d x_k + B_d u_k$, where $A_d = e^{AT_s}$ and $B_d = \int_0^{T_s} e^{A\tau} B d\tau$. Numerically obtained via Python's \texttt{cont2discrete}:
+\begin{equation}
+    A_d = \begin{bmatrix} [Value] \end{bmatrix}, \quad B_d = \begin{bmatrix} [Value] \end{bmatrix}
+\end{equation}
+
+The discrete cost function is $J_d = \sum_{k=0}^\infty (x_k^T Q x_k + u_k^T R u_k)$. From the Bellman optimality equation:
+\begin{equation}
+    V^*(x_k) = \min_{u_k} \left\{ x_k^T Q x_k + u_k^T R u_k + V^*(x_{k+1}) \right\}
+\end{equation}
+Assuming $V^*(x_k) = x_k^T P_d x_k$, we substitute $x_{k+1} = A_d x_k + B_d u_k$ and minimize with respect to $u_k$ by setting the derivative to zero. This yields the discrete algebraic Riccati equation (DARE):
+\begin{equation}
+    P_d = A_d^T P_d A_d - A_d^T P_d B_d (R + B_d^T P_d B_d)^{-1} B_d^T P_d A_d + Q
+\end{equation}
+The optimal discrete feedback gain is:
+\begin{equation}
+    K_d = (R + B_d^T P_d B_d)^{-1} B_d^T P_d A_d
+\end{equation}
+Applying $u_k = -K_d x_k$, the Python solver outputs the following:
+
+\begin{table}[h!]
+    \centering
+    \caption{Discrete-design LQR result}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Quantity} & \textbf{Numerical result} \\
+        \midrule
+        $P_d$ & \begin{bmatrix} [Matrix Values] \end{bmatrix} \\
+        $K_{d,\theta}$ & [Value] \\
+        $K_{d,\dot{\theta}}$ & [Value] \\
+        $K_{d,\alpha}$ & [Value] \\
+        $K_{d,\dot{\alpha}}$ & [Value] \\
+        Closed-loop eigenvalues of $A_d - B_d K_d$ & [Values] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Why the two gains differ}
+Solving the CARE before sampling minimizes a continuous-time integral, assuming $u(t)$ can adjust continuously. Conversely, solving the DARE minimizes a discrete sum under the strict constraint that $u(t)$ is held constant over each interval $T_s$ (Zero-Order Hold). The ZOH fundamentally alters the optimal control strategy by introducing a zero-order hold delay constraint, leading to differing optimal state-feedback gain matrices ($K_c \neq K_d$).
+
+\section{Part II: Nonlinear Simulation Results}
+
+\subsection{Common settings and experimental fairness}
+
+\begin{table}[h!]
+    \centering
+    \caption{Common nonlinear-simulation settings}
+    \begin{tabular}{ll|ll}
+        \toprule
+        \textbf{Setting} & \textbf{Value} & \textbf{Setting} & \textbf{Value} \\
+        \midrule
+        Initial condition & [Value] & Duration & [Value] \\
+        PWM limit & [Value] & Swing PWM & [Value] \\
+        Enter angle & [Value] & Exit angle & [Value] \\
+        Soft blend $\lambda$ & [Value] & Control interval & $0.005$ s \\
+        $\theta$ noise ($\mu$, $\sigma$) & [Value] & $\alpha$ noise ($\mu$, $\sigma$) & [Value] \\
+        PWM noise ($\mu$, $\sigma$) & [Value] & Number of runs & 10 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Simulation protocol and stable-stage definition}
+Settings remain strictly identical between $K_c$ and $K_d$ evaluations. The stable stage is defined exclusively as the final continuous interval where the pendulum remains in the pure LQR mode, excluding swing-up and soft-blend regions. 
+
+\subsection{Continuous-design LQR simulation}
+
+\begin{table}[h!]
+    \centering
+    \caption{Ten repeated simulation experiments using the continuous-design gain $K_c$}
+    \begin{tabular}{ccccccc}
+        \toprule
+        \textbf{Trial} & \textbf{Stable time/s} & \textbf{Mean $|\alpha|$ /rad} & \textbf{Std $|\alpha|$ /rad} & \textbf{Mean |PWM|} & \textbf{Std |PWM|} & \textbf{Max OS /rad} \\
+        \midrule
+        1 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        2 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        3 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        4 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        5 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        6 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        7 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        8 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        9 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        10 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        \midrule
+        \textbf{Mean} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \textbf{Std.} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Discrete-design LQR simulation}
+
+\begin{table}[h!]
+    \centering
+    \caption{Ten repeated simulation experiments using the discrete-design gain $K_d$}
+    \begin{tabular}{ccccccc}
+        \toprule
+        \textbf{Trial} & \textbf{Stable time/s} & \textbf{Mean $|\alpha|$ /rad} & \textbf{Std $|\alpha|$ /rad} & \textbf{Mean |PWM|} & \textbf{Std |PWM|} & \textbf{Max OS /rad} \\
+        \midrule
+        1 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        ... & ... & ... & ... & ... & ... & ... \\
+        10 & [Val] & [Val] & [Val] & [Val] & [Val] & [Val] \\
+        \midrule
+        \textbf{Mean} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \textbf{Std.} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Quantitative continuous-versus-discrete comparison}
+
+\begin{table}[h!]
+    \centering
+    \caption{Continuous-design and discrete-design LQR simulation comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metric} & \textbf{Continuous-design $K_c$} & \textbf{Discrete-design $K_d$} \\
+        \midrule
+        Stable time / s & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        Mean $|\alpha|$ / rad & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        Std $|\alpha|$ / rad & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        Mean |PWM| & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        Std |PWM| & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        Max overshoot / rad & [Mean $\pm$ Std] & [Mean $\pm$ Std] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textit{[Insert your discussion here comparing the performance of both controllers and practical significance based on ZOH discretization.]}
+
+\section{Part III: Physical-System LQR Results}
+
+\begin{table}[h!]
+    \centering
+    \caption{Physical-system LQR controller settings}
+    \begin{tabular}{ll|ll}
+        \toprule
+        \textbf{Setting} & \textbf{Value} & \textbf{Setting} & \textbf{Value} \\
+        \midrule
+        $K_d$ & [Vector] & Control frequency & 200 Hz \\
+        PWM limit & [Value] & Swing PWM & [Value] \\
+        Enter angle & [Value] & Exit angle & [Value] \\
+        Soft blend $\lambda$ & [Value] & Velocity LPF & [Value] \\
+        Pot. upright value & [Value] & Downward value & [Value] \\
+        Motor sign & [Value] & Experiment duration & [Value] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \caption{Ten repeated physical-system experiments using the discrete-design gain $K_d$}
+    \begin{tabular}{ccccccc}
+        \toprule
+        \textbf{Trial} & \textbf{Stable time} & \textbf{Mean $|\alpha|$} & \textbf{Std $|\alpha|$} & \textbf{Mean |PWM|} & \textbf{Std |PWM|} & \textbf{Max OS} \\
+        \midrule
+        1-10 & ... & ... & ... & ... & ... & ... \\
+        \midrule
+        \textbf{Mean} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \textbf{Std.} & [Val] & [Val] & [Val] & [Val] & [Val] & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textit{[Insert descriptions of physical-system behavior, capture attempts, sensor noise effects, etc.]}
+
+\section{Part IV: Sim-to-Real Analysis}
+
+\begin{table}[h!]
+    \centering
+    \caption{Matched discrete-LQR simulation and physical-system comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Metric} & \textbf{Simulation} & \textbf{Physical system} & \textbf{Relative difference / \%} \\
+        \midrule
+        Stable time / s & [Val] & [Val] & [Val]\% \\
+        Mean $|\alpha|$ / rad & [Val] & [Val] & [Val]\% \\
+        Std. $|\alpha|$ / rad & [Val] & [Val] & [Val]\% \\
+        Mean |PWM| & [Val] & [Val] & [Val]\% \\
+        Std. |PWM| & [Val] & [Val] & [Val]\% \\
+        Max OS / rad & [Val] & [Val] & [Val]\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textit{[Discuss discrepancies using log evidence: friction, dead zones, modeling errors, etc.]}
+
+\section{Part V: LQR versus the Group's Class-8 Dual PID}
+
+\subsection{Simulation comparison}
+\begin{table}[h!]
+    \centering
+    \caption{LQR and Class-8 dual-PID simulation comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metric} & \textbf{Discrete LQR} & \textbf{Group's dual PID} \\
+        \midrule
+        Stable time / s & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Mean stable $|\alpha|$ & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Std. stable $|\alpha|$ & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Max OS / rad & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Mean stable |PWM| & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Std. stable |PWM| & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Physical-system comparison}
+\begin{table}[h!]
+    \centering
+    \caption{LQR and Class-8 dual-PID physical-system comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Metric} & \textbf{Discrete LQR} & \textbf{Group's dual PID} \\
+        \midrule
+        Stable time / s & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Mean stable $|\alpha|$ & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Std. stable $|\alpha|$ & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Max OS / rad & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Mean stable |PWM| & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        Std. stable |PWM| & [Val $\pm$ Std] & [Val $\pm$ Std] \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textit{[Discuss comparison and practical significance here.]}
+
+\section{Part VI: Summary}
+\textit{[Insert final findings here without repeating the entire report.]}
+
+\end{document}
