@@ -4,8 +4,8 @@ import argparse
 from pathlib import Path
 
 # To run this script, in the terminal run the following command in this folder: 
-# $ python evaluate_performance.py [filename] [output_dir]
-# where filename should contain the name that all result files in the experiment have in common (so without numbered values), 
+# $ python evaluate_performance.py [input_file] [output_file]
+# where input_file should contain the name that all result files in the experiment have in common (so without numbered values), 
 # as the script will go through all the ten results automatically and compute the performance metrics
 
 def compute_metrics(filename):
@@ -60,21 +60,6 @@ def compute_metrics(filename):
 
     max_overshoot = abs_alpha.max()
 
-    # base_name = Path(filename).stem
-    # output_file = Path(output_dir) / f"{base_name}_metrics.txt"
-
-    # with open(output_file, "w") as f:
-    #     f.write("===== Evaluation Metrics =====\n\n")
-    #     f.write(f"Input file           : {filename}\n")
-    #     f.write(f"Stable time          : {stable_time:.4f} s\n")
-    #     f.write(f"Mean |alpha|         : {mean_alpha:.6f} rad ({np.degrees(mean_alpha):.3f} deg)\n")
-    #     f.write(f"Std |alpha|          : {std_alpha:.6f} rad ({np.degrees(std_alpha):.3f} deg)\n")
-    #     f.write(f"Mean |PWM|           : {mean_pwm:.3f}\n")
-    #     f.write(f"Std |PWM|            : {std_pwm:.3f}\n")
-    #     f.write(f"Maximum overshoot    : {max_overshoot:.6f} rad ({np.degrees(max_overshoot):.3f} deg)\n")
-
-    # print(f"Metrics saved to '{output_file}'")
-
     return (stable_time, mean_alpha, std_alpha, mean_pwm, std_pwm, max_overshoot)
 
 if __name__ == "__main__":
@@ -82,8 +67,6 @@ if __name__ == "__main__":
     parser.add_argument("input_file", help="Input CSV file")
     parser.add_argument("output_file", help ="Input name of output folder")
     args = parser.parse_args()
-
-    # output_dir = args.output_dir
 
     output_file = args.output_file
 
