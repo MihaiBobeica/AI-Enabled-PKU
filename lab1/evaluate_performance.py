@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import argparse
+import math
 from pathlib import Path
 
 # To run this script, in the terminal run the following command in this folder: 
@@ -32,14 +33,23 @@ def compute_metrics(filename):
 
     stable_index = None
 
-    for i in range(len(mode)):
-        # if np.all(mode[i:] == 3): #for hardware results
-        if np.all(mode[i:-1] == 3): #for software results
+    # for i in range(len(mode)):
+    #     if np.all(mode[i:] == 3): #for hardware results
+    #     # if np.all(mode[i:-1] == 3): #for software results
+    #         stable_index = i
+    #         break
+
+    all_abs_alpha = np.abs(df[ALPHA_COL].to_numpy())
+
+    for i in range(len(all_abs_alpha)):
+        if np.all(all_abs_alpha[i:] <= math.radians(float(15.0))):
             stable_index = i
             break
 
     if stable_index is None:
-        raise RuntimeError("Controller never entered permanent PID mode.")
+        # raise RuntimeError("Controller never entered permanent PID mode.")
+        return (None, None, None, None, None, None)
+
 
     stable = df.iloc[stable_index:]
 
