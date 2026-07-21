@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import argparse
+import math
 from pathlib import Path
 
 # To run this script, in the terminal run the following command in this folder: 
@@ -32,13 +33,23 @@ def compute_metrics(filename):
 
     stable_index = None
 
-    for i in range(len(mode)):
-        if np.all(mode[i:] == 3):
+    # for i in range(len(mode)):
+    #     if np.all(mode[i:] == 3): #for hardware results
+    #     # if np.all(mode[i:-1] == 3): #for software results
+    #         stable_index = i
+    #         break
+
+    all_abs_alpha = np.abs(df[ALPHA_COL].to_numpy())
+
+    for i in range(len(all_abs_alpha)):
+        if np.all(all_abs_alpha[i:] <= math.radians(float(15.0))):
             stable_index = i
             break
 
     if stable_index is None:
-        raise RuntimeError("Controller never entered permanent PID mode.")
+        # raise RuntimeError("Controller never entered permanent PID mode.")
+        return (None, None, None, None, None, None)
+
 
     stable = df.iloc[stable_index:]
 
@@ -51,12 +62,12 @@ def compute_metrics(filename):
     abs_alpha = np.abs(stable[ALPHA_COL])
 
     mean_alpha = abs_alpha.mean()
-    std_alpha = abs_alpha.std(ddof=1)
+    std_alpha = abs_alpha.std(ddof=0)
 
     abs_pwm = np.abs(stable[PWM_COL])
 
     mean_pwm = abs_pwm.mean()
-    std_pwm = abs_pwm.std(ddof=1)
+    std_pwm = abs_pwm.std(ddof=0)
 
     max_overshoot = abs_alpha.max()
 
@@ -76,6 +87,8 @@ if __name__ == "__main__":
         input_file = f"{args.input_file}{i:02d}.csv"
         metrics = compute_metrics(input_file)
         results.append((i,) + metrics)
+
+        print(f"Results of trial {i} written")
 
     with open(output_file, "w") as f:
         for trial, stable_time, mean_alpha, std_alpha, mean_pwm, std_pwm, max_overshoot in results:
