@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from rip_mpc_sim import (
+    ESTIMATOR_DIFFERENTIAL,
     ControllerConfig,
     MPCConfig,
     NoiseConfig,
@@ -27,22 +28,27 @@ from rip_mpc_sim import (
 )
 
 
+def normalize_params(p: dict) -> dict:
+    return {
+        "horizon": int(p["horizon"]),
+        "q_theta": float(p.get("q_theta", 1.0)),
+        "q_theta_dot": float(p.get("q_theta_dot", 0.05)),
+        "q_alpha": float(p["q_alpha"]),
+        "q_alpha_dot": float(p["q_alpha_dot"]),
+        "r_input": float(p["r_input"]),
+        "pgd_iterations": int(p["pgd_iterations"]),
+        "estimator": str(p.get("estimator", ESTIMATOR_DIFFERENTIAL)),
+        "velocity_lpf": float(p.get("velocity_lpf", 0.25)),
+    }
+
+
 def load_params(root: Path) -> dict:
     frozen = root / "frozen_mpc_params.json"
     best = root / "BEST.json"
     if frozen.exists():
-        return json.loads(frozen.read_text(encoding="utf-8"))
+        return normalize_params(json.loads(frozen.read_text(encoding="utf-8")))
     if best.exists():
-        p = json.loads(best.read_text(encoding="utf-8"))["params"]
-        return {
-            "horizon": int(p["horizon"]),
-            "q_theta": 1.0,
-            "q_theta_dot": 0.05,
-            "q_alpha": float(p["q_alpha"]),
-            "q_alpha_dot": float(p["q_alpha_dot"]),
-            "r_input": float(p["r_input"]),
-            "pgd_iterations": int(p["pgd_iterations"]),
-        }
+        return normalize_params(json.loads(best.read_text(encoding="utf-8"))["params"])
     raise SystemExit("Need frozen_mpc_params.json or BEST.json")
 
 

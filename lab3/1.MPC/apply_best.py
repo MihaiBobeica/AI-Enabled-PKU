@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 from rip_mpc_sim import (
+    ESTIMATOR_DIFFERENTIAL,
     ControllerConfig,
     MPCConfig,
     NoiseConfig,
@@ -20,6 +21,20 @@ from rip_mpc_sim import (
     result_metrics,
     run_simulation,
 )
+
+
+def freeze_params(params: dict) -> dict:
+    return {
+        "horizon": int(params["horizon"]),
+        "q_theta": float(params.get("q_theta", 1.0)),
+        "q_theta_dot": float(params.get("q_theta_dot", 0.05)),
+        "q_alpha": float(params["q_alpha"]),
+        "q_alpha_dot": float(params["q_alpha_dot"]),
+        "r_input": float(params["r_input"]),
+        "pgd_iterations": int(params["pgd_iterations"]),
+        "estimator": str(params.get("estimator", ESTIMATOR_DIFFERENTIAL)),
+        "velocity_lpf": float(params.get("velocity_lpf", 0.25)),
+    }
 
 
 def main() -> int:
@@ -30,16 +45,7 @@ def main() -> int:
     if not args.best.exists():
         raise SystemExit(f"Missing {args.best}. Run search_params.py first.")
     data = json.loads(args.best.read_text(encoding="utf-8"))
-    params = data["params"]
-    frozen = {
-        "horizon": int(params["horizon"]),
-        "q_theta": 1.0,
-        "q_theta_dot": 0.05,
-        "q_alpha": float(params["q_alpha"]),
-        "q_alpha_dot": float(params["q_alpha_dot"]),
-        "r_input": float(params["r_input"]),
-        "pgd_iterations": int(params["pgd_iterations"]),
-    }
+    frozen = freeze_params(data["params"])
     Path("frozen_mpc_params.json").write_text(json.dumps(frozen, indent=2), encoding="utf-8")
     print("Froze MPC params -> frozen_mpc_params.json")
     print(json.dumps(frozen, indent=2))
@@ -49,7 +55,7 @@ def main() -> int:
             mpc,
             ControllerConfig(),
             duration=10.0,
-            noise_config=NoiseConfig(enabled=False),
+            noise_config=NoiseConfig(enabled=True),
             initial_state=initial_state_from_name("downward"),
             rng=np.random.default_rng(0),
         )

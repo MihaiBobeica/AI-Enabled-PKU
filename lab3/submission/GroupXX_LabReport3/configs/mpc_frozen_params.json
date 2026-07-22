@@ -5,5 +5,7 @@
   "q_alpha": 80.0,
   "q_alpha_dot": 2.0,
   "r_input": 0.001,
-  "pgd_iterations": 16
+  "pgd_iterations": 16,
+  "estimator": "luenberger",
+  "velocity_lpf": 0.25
 }
