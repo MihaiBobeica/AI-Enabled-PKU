@@ -1,1 +1,0 @@
-global_step,phase,eval_level,mean_reward_per_step,mean_episode_reward,stable_success_rate,capture_rate,mean_maintain_max_stable,mean_length
