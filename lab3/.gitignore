@@ -1,0 +1,15 @@
+# Extracted course packages live under 1.MPC / 2.DQN / 3.PPO / 4.TD3.
+# Ignore local training outputs and OS/Python junk.
+
+**/runs/
+**/__pycache__/
+**/.DS_Store
+**/*.bak
+**/*.bak.*
+**/__MACOSX/
+
+# Suite runtime artifacts (code + pristine configs are tracked)
+suite/suite_logs/
+suite/suite_state.json
+suite/suite_experiment_log.csv
+suite/BEST.md
