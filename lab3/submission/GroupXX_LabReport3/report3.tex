@@ -1,0 +1,1574 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,top=18mm,bottom=18mm,left=20mm,right=20mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{siunitx}
+\usepackage{amsmath,bm}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[most]{tcolorbox}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{listings}
+
+\definecolor{TAblue}{RGB}{31,78,121}
+\definecolor{TAgray}{RGB}{244,246,248}
+\definecolor{TAred}{RGB}{170,32,37}
+\definecolor{TAgreen}{RGB}{32,112,72}
+\definecolor{TAorange}{RGB}{192,104,0}
+
+\newcommand{\CourseName}{AI Enabled Control Engineering}
+\newcommand{\ReportTitle}{Laboratory Report 3: MPC, DQN, PPO and TD3 Control of a Rotary Inverted Pendulum}
+\newcommand{\GroupNumber}{Group XX}
+\newcommand{\StudentNames}{Name 1; Name 2; Name 3; Name 4}
+\newcommand{\StudentIDs}{ID 1; ID 2; ID 3; ID 4}
+\newcommand{\SubmissionDate}{YYYY-MM-DD}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=TAblue,
+  urlcolor=TAblue,
+  pdftitle={RIP Laboratory Report 3: MPC DQN PPO TD3}
+}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\CourseName}
+\rhead{\small Laboratory Report 3}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\titleformat{\section}{\large\bfseries\color{TAblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{black!75}}{\thesubsubsection}{0.5em}{}
+\setlist[itemize]{leftmargin=6mm,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=8mm,itemsep=3pt,topsep=3pt}
+\captionsetup{font=small,labelfont=bf}
+\renewcommand{\arraystretch}{1.2}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  backgroundcolor=\color{TAgray},
+  rulecolor=\color{black!35}
+}
+
+% Keep TRUE while reading the instructions. Change to \instructionsfalse
+% before submitting the final report.
+%=======================================================================
+\newif\ifinstructions
+\instructionstrue
+%=======================================================================
+
+\newtcolorbox{requirementbox}[1][]{
+  colback=TAgray,colframe=TAblue,boxrule=0.7pt,arc=1mm,
+  left=2mm,right=2mm,top=1.5mm,bottom=1.5mm,#1}
+\newtcolorbox{warningbox}{
+  colback=red!4,colframe=TAred,boxrule=0.8pt,arc=1mm,
+  left=2mm,right=2mm,top=1.5mm,bottom=1.5mm}
+\newtcolorbox{bonusbox}{
+  colback=orange!5,colframe=TAorange,boxrule=0.8pt,arc=1mm,
+  left=2mm,right=2mm,top=1.5mm,bottom=1.5mm}
+\newtcolorbox{studentbox}{
+  colback=white,colframe=black!40,boxrule=0.5pt,arc=0mm,
+  left=2mm,right=2mm,top=1.5mm,bottom=1.5mm}
+
+\newcommand{\studenttext}[1]{\begin{studentbox}\vspace{#1}\end{studentbox}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\studentfigure}[3]{%
+\begin{figure}[H]
+\centering
+\fbox{\parbox[c][#1][c]{0.90\linewidth}{\centering
+Replace this box with the group's original figure.\\[2mm]
+Suggested file: \code{#3}}}
+\caption{#2}
+\end{figure}}
+
+\newcommand{\tenruntable}[2]{%
+\begin{table}[H]
+\centering
+\caption{#1}
+\label{#2}
+\scriptsize
+\begin{tabularx}{\linewidth}{c c *{5}{C}}
+\toprule
+Trial & Success & Final capture / s & Mean $|\alpha|$ / rad & Std. $|\alpha|$ / rad
+& Mean $|PWM|$ & Max. $|\theta|$ / rad\\
+\midrule
+1  & -- & -- & -- & -- & -- & --\\
+2  & -- & -- & -- & -- & -- & --\\
+3  & -- & -- & -- & -- & -- & --\\
+4  & -- & -- & -- & -- & -- & --\\
+5  & -- & -- & -- & -- & -- & --\\
+6  & -- & -- & -- & -- & -- & --\\
+7  & -- & -- & -- & -- & -- & --\\
+8  & -- & -- & -- & -- & -- & --\\
+9  & -- & -- & -- & -- & -- & --\\
+10 & -- & -- & -- & -- & -- & --\\
+\midrule
+Across-run mean & -- & -- & -- & -- & -- & --\\
+Across-run std. & -- & -- & -- & -- & -- & --\\
+Success rate & -- & \multicolumn{5}{c}{Successful runs / 10 = \hspace{18mm}}\\
+\bottomrule
+\end{tabularx}
+\end{table}}
+
+\newcommand{\trainingcomparisontable}[2]{%
+\begin{table}[H]
+\centering
+\caption{#1 benchmark comparison for the selected student model.}
+\label{#2}
+\small
+\begin{tabularx}{\linewidth}{Y C C C}
+\toprule
+Metric & Course benchmark & Student model & Improvement / evidence\\
+\midrule
+Best moving-mean reward per step & -- & -- & --\\
+Moving standard deviation in selected window & -- & -- & --\\
+Final moving-mean reward per step & -- & -- & --\\
+Best deterministic evaluation reward per step & -- & -- & --\\
+Nominal capture or completion rate & -- & -- & --\\
+Nominal stable-success rate & -- & -- & --\\
+Highest tested randomization level & -- & -- & --\\
+Stable-success rate at that level & -- & -- & --\\
+Post-peak collapse observed? & -- & -- & --\\
+Selected checkpoint step & -- & -- & --\\
+\bottomrule
+\end{tabularx}
+\end{table}}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{12mm}
+{\Large\bfseries \CourseName\par}
+\vspace{11mm}
+{\huge\bfseries\color{TAblue} \ReportTitle\par}
+\vspace{15mm}
+\begin{tabular}{>{\bfseries}rl}
+Group: & \GroupNumber\\[2mm]
+Students: & \StudentNames\\[2mm]
+Student IDs: & \StudentIDs\\[2mm]
+Submission date: & \SubmissionDate
+\end{tabular}
+\vfill
+\begin{tcolorbox}[width=0.90\linewidth,colback=TAgray,colframe=TAblue]
+\centering
+Submit one group ZIP through one designated representative. The report must
+contain MPC, DQN, PPO and TD3 results from simulation training/tuning,
+ten repeated simulation tests and ten repeated physical-system tests.
+\end{tcolorbox}
+\vspace{7mm}
+{\small Teaching Assistants: Zhixiang Ju and Haozhe Wang}
+\end{titlepage}
+
+\ifinstructions
+\section*{Submission Requirements -- Remove Before Final Submission}
+\addcontentsline{toc}{section}{Submission Requirements}
+
+\begin{warningbox}
+Before submission, change \verb|\instructionstrue| to
+\verb|\instructionsfalse|. Remove all instructional placeholders, empty rows
+that are not needed, and sample wording. Retain only the group's own settings,
+results, figures, calculations and analysis.
+\end{warningbox}
+
+\begin{requirementbox}
+\textbf{Scope of Report 3}
+
+The report covers four controllers:
+\begin{enumerate}
+  \item constrained model predictive control (MPC);
+  \item Deep Q-Network control (DQN);
+  \item Proximal Policy Optimization (PPO);
+  \item Twin Delayed Deep Deterministic Policy Gradient (TD3).
+\end{enumerate}
+For every controller, the group must complete ten fixed-setting simulation
+trials and ten fixed-setting physical-system trials. All failed trials must be
+retained. Do not replace failed trials with additional favourable trials.
+\end{requirementbox}
+
+\begin{requirementbox}
+\textbf{Required ZIP structure}
+\begin{verbatim}
+GroupXX_LabReport3.zip
+|-- GroupXX_LabReport3.pdf
+|-- configs/
+|   |-- dqn_config_snapshot.py
+|   |-- ppo_config_snapshot.py
+|   `-- td3_config_snapshot.py
+|-- models/
+|   |-- dqn_selected_model.*
+|   |-- ppo_selected_checkpoint_or_deploy_model.*
+|   `-- td3_best_model.zip
+|-- training/
+|   |-- dqn/   # logs（csv）, metrics and original training figures
+|   |-- ppo/
+|   `-- td3/
+|-- data/
+|   |-- mpc/sim/ and mpc/hardware/
+|   |-- dqn/sim/ and dqn/hardware/
+|   |-- ppo/sim/ and ppo/hardware/
+|   `-- td3/sim/ and td3/hardware/
+`-- bonus/     # only when a bonus is claimed
+\end{verbatim}
+Every file referenced in the report must be included and open correctly. Use
+clear run identifiers such as \code{TD3_SIM_R01.csv} and
+\code{TD3_HW_R01.png}.
+\end{requirementbox}
+
+\begin{requirementbox}
+\textbf{MPC requirement}
+
+Select one final set of $Q$, $R$, prediction horizon $N$ and projected-gradient
+iteration count $n_{\mathrm{iter}}$. Report the tuning process and then hold the
+final values fixed for ten simulation trials and ten physical-system trials.
+Changing any final MPC parameter requires restarting the ten-run set.
+\end{requirementbox}
+
+\begin{requirementbox}
+\textbf{RL requirement}
+
+For each of DQN, PPO and TD3, provide one complete selected hyperparameter set,
+including the executable reward function, learning rate(s), network structure,
+training length, exploration/noise settings, replay or rollout settings,
+evaluation settings and domain-randomization schedule. Include original
+training curves and explain why the selected checkpoint is preferred over the
+final checkpoint.
+
+The selected training result must improve on the corresponding course benchmark
+in at least one meaningful simulation-training dimension, for example:
+\begin{itemize}
+  \item a smoother reward curve with lower moving variance;
+  \item no late-stage reward collapse;
+  \item higher deterministic evaluation reward;
+  \item higher capture or stable-success rate;
+  \item better survival under parameter randomization;
+  \item similar success with lower control effort.
+\end{itemize}
+A claim without matched settings, numerical evidence and original curves does
+not count as an improvement.
+\end{requirementbox}
+
+\begin{warningbox}
+\textbf{Model selection and deployment}
+
+Use the selected best checkpoint, not automatically the final checkpoint.
+For TD3, click \textbf{Choose Model File} in the final deployment panel and
+select the intended file named \code{best_model.zip}. Do not select a stale
+\code{*.td3_deploy.npz} cache for the benchmark comparison. Record the exact
+checkpoint path and training step in the report.
+
+For PPO, preserve the matching normalization statistics and follow the Class-12
+deployment workflow. State whether the physical controller uses the standard
+hybrid swing-up plus PPO stabilizer or the Bonus-2 single-policy solution.
+\end{warningbox}
+
+\begin{requirementbox}
+\textbf{Controlled comparisons and common test protocol}
+
+Within each ten-run set, keep all model, controller, calibration, safety,
+initial-condition and duration settings fixed. For comparisons between methods,
+use the same control rate, initial-condition rule, PWM safety limit, test
+duration, success definition and random seeds wherever the software permits.
+If an unavoidable mismatch exists, state it explicitly and explain its effect.
+\end{requirementbox}
+
+\begin{requirementbox}
+\textbf{Minimum experimental outcome}
+
+The simulation-test pipeline and the physical-system pipeline must both produce
+successful control for MPC, DQN, PPO and TD3. A ten-run set may contain failed
+trials, but all failures must be reported and explained. A method that never
+captures and controls the pendulum in either simulation or hardware cannot
+receive full marks for that section.
+\end{requirementbox}
+
+
+\begin{requirementbox}
+\textbf{Report grading and bonuses}
+
+The three lab reports together contribute 50\% of the final course grade,
+while the final examination contributes the remaining 50\%.
+The relative weights among Report-1, Report-2, and Report-3 will not be
+announced in advance. However, Report-3 covers the most comprehensive
+experimental content, including MPC, DQN, PPO, TD3, simulation evaluation,
+and real-hardware validation. Therefore, Report-3 is expected to have a
+larger contribution within the overall report component.
+The final weighting will be determined after grading to ensure a fair
+overall evaluation and to avoid disadvantages caused by fixing the ratio
+before the quality of all reports is known.
+
+Report-3 is graded independently using a 100-point scale:
+
+\begin{center}
+\begin{tabularx}{0.96\linewidth}{Y C}
+\toprule
+Component & Marks\\
+\midrule
+MPC design, parameter selection, repeated tests and analysis & 20\\
+DQN configuration, training, repeated tests and analysis &20\\
+PPO configuration, training, repeated tests and analysis & 15\\
+TD3 configuration, training, repeated tests and analysis & 15\\
+Analysis and conclusions & 10\\
+Course Experience and Suggestions & 20\\
+\midrule
+Bonus 1: clear and substantial benchmark improvement(DQN or PPO or TD3) & +10\\
+Bonus 2: PPO single policy performs swing-up and stabilization & +20\\
+\midrule
+Maximum Report-3 score & 100\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\textbf{Bonus 1: Benchmark improvement}
+
+Students may receive an additional 10 points if their proposed method
+shows clear and reproducible improvement over the provided benchmark.
+The improvement should be supported by quantitative evidence, such as:
+higher reward, smoother training curves, reduced performance degradation,
+better robustness under parameter randomization, higher success rate,
+or improved sim-to-real transfer performance.
+
+\textbf{Bonus 2: PPO single-policy swing-up and stabilization}
+
+Students may receive an additional 10 points if PPO achieves complete
+single-policy control, including swing-up from the natural hanging-down
+position, upright capture, and stabilization, without using external
+controllers such as energy shaping, PID, LQR, or MPC switching.
+
+\textbf{Bonus 3: ROS framework integration}
+
+Bonus 3 is independent from the Report-3 score cap.
+A complete ROS-based rotary inverted pendulum framework integration may
+receive an additional 5 points in the overall course grade.
+
+The qualifying framework should integrate the course deployment workflow,
+control panel, Python interface, and embedded firmware into a unified
+system, including reproducible simulation testing and real-hardware
+deployment.
+\end{requirementbox}
+
+
+\clearpage
+\fi
+
+\tableofcontents
+\clearpage
+
+\section*{Group Member Contributions}
+\addcontentsline{toc}{section}{Group Member Contributions}
+
+The percentages must sum to 100\%. Group size does not change the grading
+criteria or total group score; the declared contribution percentages may affect
+the relative individual scores within the group.
+
+\begin{table}[H]
+\centering
+\caption{Contribution of each group member}
+\label{tab:contribution}
+\begin{tabularx}{\textwidth}{|c|p{28mm}|Y|p{27mm}|}
+\hline
+\textbf{Member} & \textbf{Name} & \textbf{Main contribution} &
+\textbf{Contribution (\%)}\\
+\hline
+Member 1 & & & \\
+\hline
+Member 2 & & & \\
+\hline
+Member 3 & & & \\
+\hline
+Member 4 & & & \\
+\hline
+\multicolumn{3}{|r|}{\textbf{Total}} & \textbf{100\%}\\
+\hline
+\end{tabularx}
+\end{table}
+Remove unused rows for groups with fewer than four members.
+
+\section{Part I: Common Experimental Protocol and Evaluation Metrics}
+\label{sec:common}
+
+\subsection{Common settings}
+
+Record the fixed protocol used to make the four controllers comparable. State
+all exceptions explicitly.
+
+\begin{table}[H]
+\centering
+\caption{Common simulation and physical-test protocol}
+\label{tab:commonsettings}
+\small
+\begin{tabular}{ll@{\qquad}ll}
+\toprule
+Setting & Value & Setting & Value\\
+\midrule
+
+PWM safety limit & 150 &Test duration & 30\\
+Capture angle threshold & & Stable angle threshold & \\
+Stable velocity threshold & & Required stable duration & \\
+Simulation seed list & & Randomization levels tested in sim test & 10\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+\subsection{Success, final capture and stable-stage definitions}
+
+Use one report-wide definition unless the software imposes a stricter method-
+specific definition. Let $k_s$ be the final accepted entry into the selected
+stable region. It is accepted only when the pendulum remains within the region
+for the required duration and does not subsequently lose control before the end
+of the trial.
+
+For successful trials, report
+\begin{align}
+\operatorname{Mean}|\alpha|
+&=\frac{1}{N_s}\sum_{k\in\mathcal S}|\alpha_k|,\\
+\operatorname{Std}|\alpha|
+&=\sqrt{\frac{1}{N_s}\sum_{k\in\mathcal S}
+\left(|\alpha_k|-\operatorname{Mean}|\alpha|\right)^2},\\
+\operatorname{Mean}|PWM|
+&=\frac{1}{N_s}\sum_{k\in\mathcal S}|PWM_k|,
+\end{align}
+where $\mathcal S$ is the final stable-stage sample set. The final-capture time
+is $t_{k_s}$. Report ``Fail'' for unsuccessful trials and ``--'' for unavailable
+stable-stage metrics.
+
+\subsection{Across-run statistics}
+
+For each metric $z$, calculate the mean and sample standard deviation across the
+successful trials only:
+\begin{equation}
+\bar z=\frac{1}{n}\sum_{i=1}^{n}z_i,
+\qquad
+s_z=\sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(z_i-\bar z)^2}.
+\end{equation}
+Always state $n$, the number of successful trials, together with the success
+rate. Do not hide failed trials by excluding them from the ten-row table.
+
+\subsection{Training-curve stability for RL methods}
+
+For each RL method, define the moving-window length used in the report and
+calculate at least:
+\begin{itemize}
+  \item moving mean reward per step;
+  \item moving standard deviation of reward per step;
+  \item best and final deterministic evaluation reward;
+  \item post-peak drawdown or an explicit collapse indicator;
+  \item nominal and randomized capture/stable-success rates.
+\end{itemize}
+State whether episode reward, reward per step or normalized reward is plotted.
+Do not compare unlike quantities.
+
+\section{Part II: Model Predictive Control}
+\label{sec:mpc}
+
+\subsection{MPC formulation and selected final parameters}
+
+State the state order, local prediction model, objective function, constraints,
+estimator and swing-up-to-MPC switching logic. Write the selected cost in the
+form
+\begin{equation}
+J=\sum_{i=0}^{N-1}\left(x_i^TQx_i+u_i^TRu_i\right)+x_N^TPx_N.
+\end{equation}
+
+\begin{table}[H]
+\centering
+\caption{Final MPC parameter set used for all reported trials}
+\label{tab:mpcfinal}
+\small
+\begin{tabular}{ll@{\qquad}ll}
+\toprule
+Parameter & Selected value & Parameter & Selected value\\
+\midrule
+$q_{\theta}$ & & $q_{\dot\theta}$ & \\
+$q_{\alpha}$ & & $q_{\dot\alpha}$ & \\
+Input weight $R$ & & Terminal weight $P$ & \\
+Prediction horizon $N$ & & PGD iterations $n_{\mathrm{iter}}$ & \\
+Estimator mode & &  PWM limit& \\
+MPC enter angle & & MPC exit angle & \\
+Swing-up setting & &  & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsection{MPC simulation: ten fixed-setting trials}
+
+\tenruntable{Ten nonlinear-simulation trials using the final MPC parameter set.}{tab:mpcsim10}
+
+
+
+
+
+\subsection{MPC physical system: ten fixed-setting trials}
+
+\tenruntable{Ten physical-system trials using the final MPC parameter set.}{tab:mpchw10}
+
+
+
+Explain any difference from simulation using evidence from the logs, including
+friction, backlash, dead zone, calibration, sensor noise, velocity estimation,
+solver convergence and computation time.
+
+\studenttext{10mm}
+
+\subsection{MPC sim-to-real summary}
+
+The relative difference between simulation and hardware results is
+defined as
+
+\[
+\mathrm{Relative\ difference}(\%) =
+\frac{|M_{\mathrm{hardware}}-M_{\mathrm{simulation}}|}
+{M_{\mathrm{simulation}}}\times100\%.
+\]
+
+For metrics where a larger value indicates better performance
+(e.g., success rate), the same definition is used to quantify the
+absolute performance deviation. For metrics where lower values indicate
+better performance (e.g., capture time, angle error, and control effort),
+the relative difference represents the degradation from simulation to
+hardware.
+
+\begin{table}[H]
+\centering
+\caption{MPC simulation-to-real comparison, reported as mean $\pm$ standard deviation}
+\label{tab:mpcsimreal}
+\begin{tabularx}{\linewidth}{Y C C C}
+\toprule
+Metric & Simulation & Hardware & Relative difference / \%\\
+\midrule
+Success rate & & & \\
+Final capture time / s & & & \\
+Mean $|\alpha|$ / rad & & & \\
+Std. $|\alpha|$ / rad & & & \\
+Mean $|PWM|$ & & & \\
+Max. $|\theta|$ / rad & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Part III: Deep Q-Network Control}
+\label{sec:dqn}
+
+\subsection{DQN observation, action and reward}
+
+State the  discrete action set and network output
+ordering. Reproduce the executable reward function used in training, including
+all coefficients, gates, bonuses and termination penalties.
+
+\begin{equation}
+r_k=\boxed{\text{insert the exact DQN reward implemented in code}}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\caption{Selected DQN observation, action and reward design}
+\label{tab:dqndesign}
+\begin{tabularx}{\linewidth}{p{38mm}Y}
+\toprule
+Item & Student design\\
+\midrule
+Discrete action/PWM set & \\
+Network input/output dimensions & \\
+Reward function & \\
+Termination conditions & \\
+Episode length and control rate & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Selected DQN hyperparameters}
+
+The course benchmark uses a $6\!\to\!64\!\to\!64\!\to\!10$ ReLU network,
+Adam learning rate $5\times10^{-4}$, replay capacity 30,000, batch size 512,
+$\gamma=0.95$ and a five-million-step nominal-to-randomized curriculum. Record
+one complete student-selected configuration below.
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.22\textwidth}p{0.39\textwidth}@{}}
+\caption{Complete selected DQN hyperparameter set.}\label{tab:dqnhyper}\\
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endhead
+Total environment steps & & \\
+Learning rate and optimizer & & \\
+Discount factor $\gamma$ & & \\
+Replay capacity & & \\
+Learning-start / warm-up steps & & \\
+Batch size & & \\
+Training frequency & & \\
+Gradient steps per event & & \\
+Target-network synchronization & & \\
+Behavior-network synchronization & & \\
+Initial/minimum $\epsilon$ & & \\
+Exploration decay schedule & & \\
+Nominal-stage duration & & \\
+Domain-randomization stages & & \\
+Randomized parameters/ranges & & \\
+Evaluation frequency/episodes & & \\
+\bottomrule
+\end{longtable}
+
+\subsection{DQN training result and benchmark improvement}
+
+\studentfigure{52mm}{DQN training reward per step with moving mean and moving
+standard deviation. Mark all randomization-stage boundaries.}{training/DQN_reward_curve.png}
+
+\studentfigure{48mm}{DQN deterministic evaluation, capture rate and
+stable-success rate across training.}{training/DQN_evaluation_curve.png}
+
+\trainingcomparisontable{DQN}{tab:dqnbenchmark}
+
+Explain which parameter or code changes improved the benchmark and why the
+selected checkpoint is more suitable than the final checkpoint. If collapse ,discuss why.
+
+\studenttext{18mm}
+
+\subsection{DQN simulation: ten fixed-model trials}
+
+\tenruntable{Ten simulation trials using the selected DQN checkpoint and fixed test settings.}{tab:dqnsim10}
+
+\studentfigure{46mm}{Representative DQN simulation response from natural
+hanging-down swing-up through stabilization.}{figures/DQN_SIM_representative.png}
+
+\subsection{DQN physical system: ten fixed-model trials}
+
+\tenruntable{Ten physical-system trials using the selected DQN deployment model.}{tab:dqnhw10}
+
+\studentfigure{46mm}{Representative DQN physical-system response.}{figures/DQN_HW_representative.png}
+
+Discuss simulation performance, physical performance, model-selection details,
+failed runs and the DQN sim-to-real gap.
+
+\studenttext{38mm}
+
+\section{Part IV: Proximal Policy Optimization}
+\label{sec:ppo}
+
+\subsection{PPO task, observation, action and reward}
+
+State whether the base experiment uses the standard hybrid controller
+(hand-coded swing-up plus PPO stabilization) or another approved architecture.
+Describe the PPO observation, action scaling, Actor/Critic networks,
+normalization and exact executable reward.
+
+\begin{equation}
+r_t=\boxed{\text{insert the exact PPO reward implemented in code}}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\caption{Selected PPO task and model definition}
+\label{tab:ppodesign}
+\begin{tabularx}{\linewidth}{p{42mm}Y}
+\toprule
+Item & Student design\\
+\midrule
+Task: balance-only or complete swing-up & \\
+Swing-up controller used in base experiment & \\
+Observation/history vector and scaling & \\
+Continuous action and PWM mapping & \\
+Actor/Critic architecture and activation & \\
+Observation/reward normalization & \\
+Reward terms and coefficients & \\
+Termination and success definition & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Selected PPO hyperparameters}
+
+The course benchmark uses 16 environments, rollout length 1024 per
+environment, batch size 1024, 10 epochs, learning rate $3\times10^{-4}$,
+$\gamma=0.9975$, GAE $\lambda=0.95$ and clip range 0.2. Record the complete
+selected configuration.
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.22\textwidth}p{0.39\textwidth}@{}}
+\caption{Complete selected PPO hyperparameter set.}\label{tab:ppohyper}\\
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endhead
+Actor/Critic hidden sizes & & \\
+Activation function & & \\
+Total timesteps & & \\
+Number of parallel environments & & \\
+Rollout length $n_{\mathrm{steps}}$ & & \\
+Batch size & & \\
+Optimization epochs & & \\
+Learning rate / schedule & & \\
+Discount factor $\gamma$ & & \\
+GAE $\lambda$ & & \\
+Clip range & & \\
+Target KL & & \\
+Entropy coefficient & & \\
+Value coefficient & & \\
+Maximum gradient norm & & \\
+Initial log standard deviation & & \\
+Observation normalization & & \\
+Reward normalization & & \\
+Domain-randomization curriculum & & \\
+Randomized parameters/ranges & & \\
+Evaluation frequency/episodes & & \\
+Random seeds & & \\
+Selected checkpoint and normalization file & & \\
+Physical deployment model/workflow & & \\
+\bottomrule
+\end{longtable}
+
+\subsection{PPO training result and benchmark improvement}
+
+\studentfigure{52mm}{PPO raw training reward per step with moving mean and
+moving standard deviation. Show curriculum/randomization progress.}{training/PPO_reward_curve.png}
+
+\studentfigure{48mm}{PPO deterministic nominal and randomized evaluation
+curves.}{training/PPO_evaluation_curve.png}
+
+\trainingcomparisontable{PPO}{tab:ppobenchmark}
+
+Explain the selected checkpoint, matching normalization statistics, late-stage
+stability and any difference between normalized training reward and raw
+evaluation reward.
+
+\studenttext{18mm}
+
+\subsection{PPO simulation: ten fixed-model trials}
+
+\tenruntable{Ten simulation trials using the selected PPO controller and fixed test settings.}{tab:pposim10}
+
+\studentfigure{46mm}{Representative PPO simulation response, including the
+swing-up/stabilization mode when a hybrid controller is used.}{figures/PPO_SIM_representative.png}
+
+\subsection{PPO physical system: ten fixed-model trials}
+
+\tenruntable{Ten physical-system trials using the selected PPO deployment controller.}{tab:ppohw10}
+
+\studentfigure{46mm}{Representative PPO physical-system response.}{figures/PPO_HW_representative.png}
+
+Discuss capture, stable balance, mode switching, normalization mismatch,
+physical repeatability and failed runs.
+
+\studenttext{18mm}
+
+\section{Part V: Twin Delayed Deep Deterministic Policy Gradient}
+\label{sec:td3}
+
+\subsection{TD3 observation, action and reward}
+
+The course deployment Actor is already a compact $7\!\to\!64\!\to\!64\!\to\!1$
+network and does not require distillation. State the exact seven-dimensional
+observation order, continuous action scaling, previous-action convention and
+reward.
+
+\begin{equation}
+r_k=\boxed{\text{insert the exact TD3 reward implemented in code}}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\caption{Selected TD3 task and model definition}
+\label{tab:td3design}
+\begin{tabularx}{\linewidth}{p{42mm}Y}
+\toprule
+Item & Student design\\
+\midrule
+Observation vector and order & \\
+Previous-action/history convention & \\
+Actor architecture and activation & \\
+Twin-Critic architecture & \\
+Continuous action and PWM mapping & \\
+Reward terms and coefficients & \\
+Termination and success definition & \\
+Checkpoint selected with Choose Model File & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Selected TD3 hyperparameters}
+
+The course benchmark uses replay capacity 1,000,000, learning starts 10,000,
+batch size 128, Actor learning rate $10^{-4}$, Critic learning rate
+$10^{-3}$, $\gamma=0.99$, $\tau=0.005$, policy delay 2, exploration sigma 0.1,
+target noise 0.2 and target-noise clip 0.5.
+
+\begin{longtable}{@{}p{0.30\textwidth}p{0.22\textwidth}p{0.39\textwidth}@{}}
+\caption{Complete selected TD3 hyperparameter set.}\label{tab:td3hyper}\\
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endfirsthead
+\toprule
+Parameter & Selected value & Reason / expected effect\\
+\midrule
+\endhead
+Actor hidden sizes/activation & & \\
+Critic hidden sizes/activation & & \\
+Actor learning rate & & \\
+Critic learning rate & & \\
+Discount factor $\gamma$ & & \\
+Polyak coefficient $\tau$ & & \\
+Replay capacity & & \\
+Learning-start steps & & \\
+Batch size & & \\
+Train frequency & & \\
+Gradient steps & & \\
+Policy delay & & \\
+Exploration-noise sigma & & \\
+Target-policy noise & & \\
+Target-noise clip & & \\
+Gradient clipping & & \\
+Total timesteps & & \\
+Nominal-stage duration & & \\
+Domain-randomization stages & & \\
+Randomized parameters/ranges & & \\
+Evaluation frequency/episodes & & \\
+Random seeds & & \\
+Selected \code{best_model.zip} path and step & & \\
+\bottomrule
+\end{longtable}
+
+\subsection{TD3 training result and benchmark improvement}
+
+\studentfigure{52mm}{TD3 episode reward per step with moving mean and moving
+standard deviation. Mark all stage boundaries.}{training/TD3_reward_curve.png}
+
+\studentfigure{48mm}{TD3 deterministic evaluation reward, capture rate and
+stable-success rate.}{training/TD3_evaluation_curve.png}
+
+\trainingcomparisontable{TD3}{tab:td3benchmark}
+
+Explain how delayed Actor updates, action noise, target noise, Critic learning
+rate, batch size and randomization affected curve stability. State why the
+selected \code{best_model.zip} is preferred over the final model.
+
+\studenttext{18mm}
+
+\subsection{TD3 simulation: ten fixed-model trials}
+
+\tenruntable{Ten simulation trials using the selected TD3 \code{best_model.zip}.}{tab:td3sim10}
+
+\studentfigure{46mm}{Representative TD3 full-task simulation response from
+natural hanging-down swing-up to upright stabilization.}{figures/TD3_SIM_representative.png}
+
+\subsection{TD3 physical system: ten fixed-model trials}
+
+\tenruntable{Ten physical-system trials using the selected TD3 \code{best_model.zip}.}{tab:td3hw10}
+
+\studentfigure{46mm}{Representative TD3 physical-system response.}{figures/TD3_HW_representative.png}
+
+Discuss full-policy swing-up, first-action/PWM behaviour, previous-action input,
+model upload verification, physical repeatability and failed trials.
+
+\studenttext{38mm}
+
+\section{Part VI: Cross-Controller Statistical Comparison}
+\label{sec:comparison}
+
+\subsection{Simulation comparison}
+
+Use the ten-run summary statistics, not one favourable trial. Do not compare the
+internal training rewards of different algorithms as though they were the same
+objective. Compare common physical-control metrics.
+
+\begin{table}[H]
+\centering
+\caption{Ten-run simulation comparison. Report mean $\pm$ standard deviation for successful runs.}
+\label{tab:allsimcompare}
+\scriptsize
+\begin{tabularx}{\linewidth}{l C C C C C C}
+\toprule
+Method & Success / \% & Capture / s & Mean $|\alpha|$ / rad & Std. $|\alpha|$ / rad
+& Mean $|PWM|$ & Max. $|\theta|$ / rad\\
+\midrule
+MPC & & & & & & \\
+DQN & & & & & & \\
+PPO & & & & & & \\
+TD3 & & & & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Physical-system comparison}
+
+\begin{table}[H]
+\centering
+\caption{Ten-run physical-system comparison. Report mean $\pm$ standard deviation for successful runs.}
+\label{tab:allhwcompare}
+\scriptsize
+\begin{tabularx}{\linewidth}{l C C C C C C}
+\toprule
+Method & Success / \% & Capture / s & Mean $|\alpha|$ / rad & Std. $|\alpha|$ / rad
+& Mean $|PWM|$ & Max. $|\theta|$ / rad\\
+\midrule
+MPC & & & & & & \\
+DQN & & & & & & \\
+PPO & & & & & & \\
+TD3 & & & & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Sim-to-real degradation by method}
+
+\begin{table}[H]
+\centering
+\caption{Method-by-method sim-to-real degradation}
+\label{tab:allgaps}
+\small
+\begin{tabularx}{\linewidth}{l C C C C}
+\toprule
+Method & Success-rate change & Capture-time change & $|\alpha|$ change
+& Mean-$|PWM|$ change\\
+\midrule
+MPC & & & & \\
+DQN & & & & \\
+PPO & & & & \\
+TD3 & & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Engineering interpretation}
+
+Discuss the following using numerical evidence:
+\begin{itemize}
+  \item which method is most repeatable in simulation and in hardware;
+  \item which method captures fastest and which has the smallest stable angle;
+  \item which method uses the least control effort and causes the least arm excursion;
+  \item sensitivity to parameter randomization and model mismatch;
+  \item offline training/tuning cost versus online computation cost;
+  \item interpretability, safety, debugging and ease of deployment;
+  \item why a method with the best simulation reward may not be the best physical controller.
+\end{itemize}
+
+\studenttext{20mm}
+
+\section{Part VII: Benchmark-Improvement and Bonus Evidence}
+\label{sec:bonus}
+
+\subsection{Required RL benchmark-improvement summary}
+
+For each RL method, state one aspect in which the selected model exceeds the
+course benchmark. Use ``not demonstrated'' when evidence is insufficient.
+
+\begin{table}[H]
+\centering
+\caption{Summary of claimed benchmark improvements}
+\label{tab:improvementsummary}
+\small
+\begin{tabularx}{\linewidth}{l Y C Y}
+\toprule
+Method & Claimed improvement & Numerical magnitude & Evidence location\\
+\midrule
+DQN & & & \\
+PPO & & & \\
+TD3 & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Bonus 1 claim: clear and substantial improvement}
+
+Check one:
+\begin{itemize}
+  \item[$\square$] Bonus 1 is not claimed.
+  \item[$\square$] Bonus 1 is claimed for DQN / PPO / TD3: \hspace{30mm}
+\end{itemize}
+
+Identify 
+parameter change, numerical improvement and why the
+change is scientifically meaningful.
+
+\studenttext{18mm}
+
+\subsection{Bonus 2 claim: one PPO policy for swing-up and stabilization}
+
+Check one:
+\begin{itemize}
+  \item[$\square$] Bonus 2 is not claimed.
+  \item[$\square$] Bonus 2 is claimed and the evidence below is complete.
+\end{itemize}
+
+ Provide
+the observation, reward, reset distribution, network and checkpoint details.
+Use the final policy for ten simulation and ten physical trials.
+
+\tenruntable{Bonus-2 PPO single-policy simulation trials.}{tab:bonus2sim}
+\tenruntable{Bonus-2 PPO single-policy physical-system trials.}{tab:bonus2hw}
+
+\studenttext{32mm}
+
+\subsection{Bonus 3 claim: unified ROS deployment framework}
+
+Check one:
+\begin{itemize}
+  \item[$\square$] Bonus 3 is not claimed.
+  \item[$\square$] Bonus 3 is claimed; the complete Python and firmware package is included.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Bonus-3 implementation checklist}
+\label{tab:bonus3check}
+\begin{tabularx}{\linewidth}{Y C Y}
+\toprule
+Required capability & Completed? & File / evidence\\
+\midrule
+One unified Python entry point & & \\
+MPC/DQN/PPO/TD3 controller selection & & \\
+Simulation and physical modes & & \\
+Port selection and manual connection & & \\
+Calibration workflow & & \\
+Model/config selection and upload & & \\
+SAVE, GO and STOP safety workflow & & \\
+CSV/figure logging & & \\
+Matching STM32/Arduino \code{.ino} firmware & & \\
+README and reproducible launch instructions & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Describe the software architecture and identify the improvements over the
+original WeChat ROS framework.
+
+\studenttext{12mm}
+
+\section{Part VIII: Conclusions}
+\label{sec:conclusion}
+
+Summarise the main findings without repeating the entire report. State the
+best-performing method in simulation, the best-performing method on hardware,
+the most robust method, the most efficient method and the most important lesson
+from the sim-to-real comparison. Distinguish evidence from opinion.
+
+\studenttext{45mm}
+
+\appendix
+
+% ============================================================
+% Part IV: Individual Course Experience Survey
+% Each group member must complete one copy independently.
+% ============================================================
+
+\section{Part IV: Course Experience and Suggestions}
+
+\begin{requirementbox}
+\textbf{Instructions and privacy statement}
+
+Each group member must complete one copy of this survey independently.
+Do not discuss or coordinate the answers with other group members before
+completing the survey.
+
+To protect students' privacy, do not write your name or student ID.
+Identify yourself only using the group member number assigned in this report,
+for example, Group Member 1, Group Member 2, or Group Member 3.
+
+The information collected in this section will be treated confidentially
+and used solely to improve the content, organisation, documentation,
+software tools, and laboratory experience of future versions of this course.
+Individual responses will not affect the technical mark of Report-3 or any
+other course grade.
+\end{requirementbox}
+
+% ------------------------------------------------------------
+% Individual survey macro
+% Usage: \MemberCourseSurvey{1}
+% ------------------------------------------------------------
+
+\newcommand{\MemberCourseSurvey}[1]{%
+
+\clearpage
+
+\subsection*{Individual Survey: Group Member No.~#1}
+
+\begin{center}
+\begin{tabularx}{0.72\linewidth}{Y C}
+\toprule
+Group number & \rule{3.0cm}{0.4pt}\\
+Group member number & \textbf{#1}\\
+Date completed & \rule{3.0cm}{0.4pt}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection*{A. Prior Background}
+
+Complete this table based on your experience
+\textbf{before taking this course}.
+
+\begin{table}[H]
+\centering
+\caption{Prior background of Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C}
+\toprule
+Item & Response\\
+\midrule
+Previous coursework in classical control
+& None / Basic / Extensive\\
+
+Previous experience with PID control
+& None / Basic / Extensive\\
+
+Previous experience with LQR or state-space control
+& None / Basic / Extensive\\
+
+Previous experience with MPC
+& None / Basic / Extensive\\
+
+Previous experience with Python
+& None / Basic / Extensive\\
+
+Previous experience with C/C++ or embedded systems
+& None / Basic / Extensive\\
+
+Previous experience with reinforcement learning
+& None / Basic / Extensive\\
+
+Previous experience deploying algorithms to real hardware
+& None / Basic / Extensive\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{B. Retrospective Learning Gains}
+
+For each competency, rate your ability both
+\textbf{before taking this course} and
+\textbf{at the end of this course}.
+
+Use the following scale:
+
+\[
+1=\text{unable},\qquad
+2=\text{limited},\qquad
+3=\text{basic},\qquad
+4=\text{confident},\qquad
+5=\text{able to work independently}.
+\]
+
+\begin{table}[H]
+\centering
+\caption{Retrospective competency comparison for Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C C}
+\toprule
+Competency & Before course & After course\\
+\midrule
+
+
+Tune a dual-loop PID controller using simulation and experimental evidence
+& & \\
+
+
+Explain the effects of the LQR weighting matrices $Q$ and $R$
+& & \\
+
+Tune an LQR controller using quantitative experimental evidence
+& & \\
+
+Explain the effects of MPC parameters $Q$, $R$, prediction horizon,
+and solver iterations
+& & \\
+
+Tune an MPC controller using quantitative experimental evidence
+& & \\
+
+Explain the main differences among DQN, PPO, and TD3
+& & \\
+
+Design or modify a reinforcement-learning reward function
+& & \\
+
+Interpret reward, evaluation, capture-rate, and success-rate curves
+& & \\
+
+Diagnose unstable or collapsed reinforcement-learning training
+& & \\
+
+Select useful reinforcement-learning hyperparameters based on
+experimental results
+& & \\
+
+Explain the purpose of domain randomization
+& & \\
+
+Evaluate controller robustness using repeated simulation experiments
+& & \\
+
+Transfer a controller from simulation to real hardware
+& & \\
+
+Calibrate sensors and verify motor direction and PWM limits
+& & \\
+
+Upload a trained neural-network controller to the STM32 platform
+& & \\
+
+Diagnose serial communication, model-upload, and firmware problems
+& & \\
+
+Design a reproducible control experiment and report statistical results
+& & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{C. Time Investment, Difficulty, and Independence}
+
+For ``Difficulty'', use:
+
+\[
+1=\text{very easy},\qquad
+5=\text{very difficult}.
+\]
+
+For ``Independent completion'', use:
+
+\[
+1=\text{required continuous assistance},\qquad
+5=\text{completed independently}.
+\]
+
+\begin{table}[H]
+\centering
+\caption{Estimated workload of Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C C C}
+\toprule
+Course component &
+Time spent / h &
+Difficulty (1--5) &
+Independent completion (1--5)\\
+\midrule
+Dual-loop PID modelling, tuning, and simulation
+& & & \\
+
+Dual-loop PID real-hardware experiments
+& & & \\
+
+LQR modelling, design, and simulation
+& & & \\
+
+LQR real-hardware experiments
+& & & \\
+
+MPC modelling, tuning, and simulation
+& & & \\
+
+MPC real-hardware experiments
+& & & \\
+
+DQN training and simulation testing
+& & & \\
+
+DQN real-hardware deployment
+& & & \\
+
+PPO training and simulation testing
+& & & \\
+
+PPO real-hardware deployment
+& & & \\
+
+TD3 training and simulation testing
+& & & \\
+
+TD3 real-hardware deployment
+& & & \\
+
+Debugging software, serial communication, and firmware
+& & & \\
+
+Preparing Report-1, Report-2, and Report-3
+& & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{D. Sources of Difficulty}
+
+Select the \textbf{five} factors that consumed the most time or caused
+the most difficulty. Place a check mark in the second column.
+
+\begin{table}[H]
+\centering
+\caption{Main sources of difficulty reported by Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C}
+\toprule
+Potential source of difficulty & Selected?\\
+\midrule
+Understanding rotary inverted pendulum dynamics
+& \\
+
+Understanding dual-loop PID control
+& \\
+
+Tuning the inner and outer PID loops
+& \\
+
+Understanding state-space modelling and LQR theory
+& \\
+
+Selecting suitable LQR weighting matrices $Q$ and $R$
+& \\
+
+Designing the MPC cost function
+& \\
+
+Selecting the MPC prediction horizon and solver iterations
+& \\
+
+Understanding reinforcement-learning theory
+& \\
+
+Designing the reinforcement-learning reward function
+& \\
+
+Selecting reinforcement-learning hyperparameters
+& \\
+
+Long training time or limited computing resources
+& \\
+
+Interpreting training and evaluation curves
+& \\
+
+Understanding domain randomization
+& \\
+
+Python dependencies or software installation
+& \\
+
+Using the graphical training and control panels
+& \\
+
+Serial communication and model upload
+& \\
+
+STM32 firmware compilation or flashing
+& \\
+
+Sensor calibration and encoder direction
+& \\
+
+Motor direction, PWM limits, or safety settings
+& \\
+
+Differences between simulation and hardware
+& \\
+
+Insufficient access to the physical platform
+& \\
+
+Coordinating work among group members
+& \\
+
+Report workload or documentation requirements
+& \\
+
+Other: \rule{4cm}{0.4pt}
+& \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{E. Evaluation of Course Design}
+
+Rate each statement from 1 to 5, where
+
+\[
+1=\text{strongly disagree},\qquad
+5=\text{strongly agree}.
+\]
+
+\begin{table}[H]
+\centering
+\caption{Course-design evaluation by Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C}
+\toprule
+Statement & Rating (1--5)\\
+\midrule
+The progression from dual-loop PID to LQR, MPC, DQN, PPO, and TD3
+was logically organised.
+& \\
+
+Learning dual-loop PID helped me understand hierarchical feedback control.
+& \\
+
+Learning LQR helped me connect mathematical models with feedback-control
+design.
+& \\
+
+Learning MPC helped me understand prediction, constraints, and online
+optimisation.
+& \\
+
+Comparing classical control and reinforcement learning improved my
+understanding of both.
+& \\
+
+Comparing DQN, PPO, and TD3 improved my understanding of different
+reinforcement-learning methods.
+& \\
+
+Repeated simulation tests helped me evaluate controller robustness.
+& \\
+
+Real-hardware experiments improved my understanding of simulation-to-real
+gaps.
+& \\
+
+The requirement to report means and standard deviations improved the
+quality of my experimental analysis.
+& \\
+
+The provided benchmark controllers and models were useful reference points.
+& \\
+
+Attempting to improve the provided benchmark encouraged meaningful
+experimentation.
+& \\
+
+The graphical training and deployment panels reduced unnecessary setup
+effort.
+& \\
+
+The control panels still allowed me to understand the underlying control
+and deployment process.
+& \\
+
+The technical manuals contained enough information to complete the tasks.
+& \\
+
+The balance among theory, simulation, and hardware experiments was
+appropriate.
+& \\
+
+The amount of access to the physical platform was sufficient.
+& \\
+
+The overall workload was appropriate for the intended learning outcomes.
+& \\
+
+The group-work structure allowed each member to make a meaningful
+contribution.
+& \\
+
+After this course, I feel able to begin an independent control,
+reinforcement-learning, or embedded-systems project.
+& \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{F. Most Valuable Learning Activities}
+
+Rank the following activities from 1 to 10, where
+
+\[
+1=\text{the activity that contributed most to your learning}.
+\]
+
+Use each rank only once.
+
+\begin{table}[H]
+\centering
+\caption{Ranking of learning activities by Group Member No.~#1}
+\begin{tabularx}{\linewidth}{Y C}
+\toprule
+Activity & Rank\\
+\midrule
+Dual-loop PID modelling and parameter tuning
+& \\
+
+LQR modelling and weighting-matrix design
+& \\
+
+MPC modelling, cost-function design, and parameter tuning
+& \\
+
+DQN training and deployment
+& \\
+
+PPO training and deployment
+& \\
+
+TD3 training and deployment
+& \\
+
+Comparing all controllers using common quantitative metrics
+& \\
+
+Improving performance beyond the provided benchmark
+& \\
+
+Simulation-to-real transfer and real-hardware debugging
+& \\
+
+Writing technical reports and analysing repeated experiments
+& \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{requirementbox}
+\textbf{Privacy reminder}
+
+This survey is identified only by Group Member No.~#1.
+Do not include your name, student ID, email address, or other personally
+identifiable information.
+
+Your responses will be used solely to improve future versions of the course.
+They will not affect your Report-3 mark or overall course grade.
+\end{requirementbox}
+
+} % End of \MemberCourseSurvey
+
+
+% ============================================================
+% Add one command for each group member.
+% Delete unused lines or add more lines when necessary.
+% ============================================================
+
+\MemberCourseSurvey{1}
+%\MemberCourseSurvey{2}
+
+% Uncomment or add lines according to the actual group size:
+%\MemberCourseSurvey{3}
+% \MemberCourseSurvey{4}
+% \MemberCourseSurvey{5}
+
+\end{document}

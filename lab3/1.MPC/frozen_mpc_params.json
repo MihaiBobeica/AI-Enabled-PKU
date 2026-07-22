@@ -1,0 +1,9 @@
+{
+  "horizon": 8,
+  "q_theta": 1.0,
+  "q_theta_dot": 0.05,
+  "q_alpha": 80.0,
+  "q_alpha_dot": 2.0,
+  "r_input": 0.001,
+  "pgd_iterations": 16
+}

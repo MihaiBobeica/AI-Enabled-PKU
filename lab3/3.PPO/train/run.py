@@ -1,7 +1,7 @@
 """
 run.py
 
-Single entry point for Stage-1 PPO sim-to-real balance training.
+Single entry point for Stage-1 PPO sim-to-real training.
 
 Default (opens the training panel):
     python run.py
@@ -10,8 +10,10 @@ Direct workers remain available:
     python run.py train
     python run.py smoke
     python run.py eval path/to/model.zip
+    python run.py train --config config_bonus2
+    python run.py smoke --config config_bonus2
 
-Change training hyperparameters and randomization ranges in config.py, not here.
+Hybrid balance: config.py. Bonus-2 single-policy swing-up: config_bonus2.py.
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ import argparse
 import copy
 import csv
 from collections import deque
+import importlib
 import json
 import math
 import os
@@ -30,13 +33,25 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
-# Use the vendored Stable-Baselines3 source if requested in config.py.
-# Gymnasium, torch, numpy and matplotlib remain normal Python runtime libraries.
+
+def _early_config_name() -> str:
+    argv = sys.argv[1:]
+    if "--config" in argv:
+        idx = argv.index("--config")
+        if idx + 1 < len(argv):
+            return str(argv[idx + 1]).replace(".py", "")
+    return "config"
+
+
+# Load selected config module and expose it as `config` for the rest of this file.
+_CONFIG_NAME = _early_config_name()
 try:
-    import config
+    config = importlib.import_module(_CONFIG_NAME)
+    sys.modules["config"] = config
 except Exception as exc:
-    raise RuntimeError(f"Failed to import config.py: {exc}") from exc
+    raise RuntimeError(f"Failed to import config module '{_CONFIG_NAME}': {exc}") from exc
 
 # Prefer project-local runtime libraries when shipped.  This makes the package
 # callable even when Gymnasium/SB3 are not globally installed in the active
@@ -49,7 +64,6 @@ if LOCAL_THIRD_PARTY.exists():
 LOCAL_SB3_PARENT = PROJECT_ROOT / "stable_baselines3"
 if bool(config.RUN.get("prefer_local_stable_baselines3", True)) and LOCAL_SB3_PARENT.exists():
     sys.path.insert(0, str(LOCAL_SB3_PARENT))
-sys.path.insert(0, str(PROJECT_ROOT))
 
 try:
     import numpy as np
@@ -543,6 +557,16 @@ def build_training_envs(run_dir: str):
 
 
 def train() -> None:
+    if os.environ.get("OVERNIGHT_APPLY_BEST") == "1":
+        overrides_path = PROJECT_ROOT / "best_config_overrides.json"
+        if overrides_path.exists():
+            data = json.loads(overrides_path.read_text(encoding="utf-8")).get("PPO", {})
+            config.PPO.update(data)
+            config.PPO["total_timesteps"] = int(config.PPO.get("total_timesteps", 2_000_000))
+            print(f"[OVERNIGHT] applied {overrides_path.name}: {data}", flush=True)
+        else:
+            print("[OVERNIGHT] missing best_config_overrides.json; using config.py", flush=True)
+
     run_dir = config.run_dir()
     ensure_dir(run_dir)
     ensure_dir(os.path.join(run_dir, "models"))
@@ -648,14 +672,26 @@ def smoke() -> None:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Stage-1 SB3 PPO sim-to-real RIP balance")
+    parser = argparse.ArgumentParser(description="Stage-1 SB3 PPO sim-to-real RIP")
     parser.add_argument("mode", nargs="?", choices=["train", "eval", "smoke"], default=None)
     parser.add_argument("model_path", nargs="?", default=None, help="Only used for eval mode")
+    parser.add_argument(
+        "--config",
+        default="config",
+        help="Config module (default: config; Bonus-2: config_bonus2)",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    # Config already loaded via --config peek at import time; warn on mismatch.
+    if args.config.replace(".py", "") != _CONFIG_NAME:
+        print(
+            f"[WARN] --config={args.config} but process loaded '{_CONFIG_NAME}'. "
+            f"Re-run as: python run.py {args.mode or ''} --config {args.config}",
+            flush=True,
+        )
     if args.mode is None:
         from training_panel import TrainingPanel
         TrainingPanel().mainloop()

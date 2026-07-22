@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import math
+import os
 import shutil
 import time
 from pathlib import Path
@@ -111,7 +112,24 @@ def _make_payload(
     )
 
 
+def _apply_overnight_overrides() -> None:
+    """When OVERNIGHT_APPLY_BEST=1, merge best_config_overrides.json into config.DQN."""
+    if os.environ.get("OVERNIGHT_APPLY_BEST") != "1":
+        return
+    path = Path(__file__).resolve().parent / "best_config_overrides.json"
+    if not path.exists():
+        print(f"[OVERNIGHT] missing {path.name}; training with config.py as-is", flush=True)
+        return
+    import json
+
+    data = json.loads(path.read_text(encoding="utf-8")).get("DQN", {})
+    config.DQN.update(data)
+    config.DQN["total_timesteps"] = int(config.DQN.get("total_timesteps", 5_000_000))
+    print(f"[OVERNIGHT] applied {path.name}: {data}", flush=True)
+
+
 def run_training(smoke: bool = False) -> Dict[str, Any]:
+    _apply_overnight_overrides()
     seed = int(config.RUN["seed"])
     seed_everything(seed)
     torch.set_num_threads(max(1, int(config.RUN.get("torch_num_threads", 4))))

@@ -1,0 +1,26 @@
+{
+  "score": 94.8680725776509,
+  "trial": 0,
+  "params": {
+    "horizon": 8,
+    "q_alpha": 80.0,
+    "q_alpha_dot": 2.0,
+    "r_input": 0.001,
+    "pgd_iterations": 16
+  },
+  "run_dir": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\1.MPC\\search_logs\\trial_0000_artifacts",
+  "updated_at": "2026-07-22T13:51:46+00:00",
+  "is_baseline": true,
+  "extra": {
+    "metrics": {
+      "stable_start_time": 3.815,
+      "stable_duration": 6.1850000000000005,
+      "alpha_abs_mean": 0.011888548446982046,
+      "alpha_abs_std": 0.030343914700169727,
+      "pwm_abs_mean": 4.501981768896617,
+      "pwm_abs_std": 17.246957427455843,
+      "max_abs_theta": 2.198112395030389,
+      "capture_time": 3.815
+    }
+  }
+}

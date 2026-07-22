@@ -50,16 +50,36 @@ if LOCAL_SB3_PARENT.exists():
 
 sys.path.insert(0, str(PROJECT_ROOT))
 
+
+def _early_config_name() -> str:
+    argv = sys.argv[1:]
+    if "--config" in argv:
+        idx = argv.index("--config")
+        if idx + 1 < len(argv):
+            return str(argv[idx + 1]).replace(".py", "")
+    return "config"
+
+
+import importlib
+
+config = importlib.import_module(_early_config_name())
+sys.modules["config"] = config
+
 import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-import config
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecNormalize
 from run import make_vec_env
 from rip_env.register_envs import register_all_envs
+
+# Keep run.config aligned if run.py early-loaded a different default.
+import run as _run_module
+
+_run_module.config = config
+sys.modules["config"] = config
 
 
 DEFAULT_DISTILL: Dict[str, Any] = {
@@ -802,7 +822,36 @@ def main() -> None:
     parser.add_argument("--header-out", type=str, default="", help="Exact output path for model_weights.h")
     parser.add_argument("--no-gui", action="store_true", help="Do not show chooser/completion dialogs")
     parser.add_argument("--smoke", action="store_true", help="Very short integration test, not a useful final distillation")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config",
+        help="Training config module (use config_bonus2 for Bonus-2 teachers)",
+    )
+    parser.add_argument(
+        "--activation",
+        type=str,
+        default="",
+        choices=["", "Tanh", "ReLU", "Hardtanh"],
+        help="Student hidden activation. Bonus-2 deploy expects ReLU; hybrid firmware expects Tanh.",
+    )
+    parser.add_argument(
+        "--run-dir",
+        type=str,
+        default="",
+        help="Alias for --teacher-dir (Bonus-2 docs use this name)",
+    )
     args = parser.parse_args()
+    if args.run_dir and not args.teacher_dir:
+        args.teacher_dir = args.run_dir
+    # Re-bind if argparse config differs from early peek (should match).
+    cfg_name = str(args.config).replace(".py", "")
+    if cfg_name != getattr(config, "__name__", cfg_name):
+        import importlib as _il
+        new_cfg = _il.import_module(cfg_name)
+        globals()["config"] = new_cfg
+        sys.modules["config"] = new_cfg
+        _run_module.config = new_cfg
 
     gui_used = False
     selected_dir: Optional[Path] = None
@@ -831,8 +880,10 @@ def main() -> None:
 
         cfg = get_distill_cfg()
         # Fixed deployment contract required by the latest firmware/panels.
+        # Hybrid PPO balance uses Tanh; Bonus-2 always-on panels match teacher ReLU.
+        activation = str(args.activation or "Tanh")
         cfg["student_hidden_sizes"] = (64, 64)
-        cfg["student_activation"] = "Tanh"
+        cfg["student_activation"] = activation
         cfg["student_final_tanh"] = True
         cfg["deploy_obs_mode"] = "compact7"
         cfg["deploy_header_name"] = "model_weights.h"
@@ -865,7 +916,7 @@ def main() -> None:
         print(f"[OUTPUT]       {output_dir}")
         print(f"[HEADER]       {deploy_header_path}")
         print(f"[DEVICE]       {device}")
-        print("[NETWORK]      compact7 7 -> 64 -> 64 -> 1, Tanh/Tanh/Tanh")
+        print(f"[NETWORK]      compact7 7 -> 64 -> 64 -> 1, {activation}/{activation}/Tanh")
         print("=" * 100)
 
         collect_env = make_eval_or_collect_env(float(cfg["eval_randomization_level"]), vecnormalize_path)
@@ -881,7 +932,7 @@ def main() -> None:
                 obs_dim=obs_dim,
                 action_dim=action_dim,
                 hidden_sizes=(64, 64),
-                activation="Tanh",
+                activation=activation,
                 final_tanh=True,
             ).to(device)
 

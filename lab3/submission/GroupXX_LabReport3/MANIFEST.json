@@ -1,0 +1,11 @@
+{
+  "group": "XX",
+  "note": "Fill GroupXX_LabReport3.pdf, complete 10x10 data folders, then re-run this packager.",
+  "layout": [
+    "configs/",
+    "models/",
+    "training/",
+    "data/",
+    "bonus/"
+  ]
+}

@@ -1,16 +1,13 @@
 """
-config.py
+config_bonus2.py
 
-Stage-1 foundation config for the rotary inverted pendulum sim-to-real PPO
-balance benchmark.
+Bonus-2 PPO single-policy swing-up + stabilize (no hybrid energy swing-up).
 
-The intended workflow is:
-    1. Edit this file.
-    2. Run: python run.py
+Usage:
+    python run.py train --config config_bonus2
+    python run.py smoke --config config_bonus2
 
-All training hyperparameters, environment settings, reward weights, and
-sim-to-real randomization ranges are collected here.  run.py should normally
-not need to be edited.
+Default hybrid balance training remains in config.py.
 """
 
 from __future__ import annotations
@@ -39,7 +36,7 @@ from rip_env.envs.done_fns import build_done_fn as build_done_fn_from_dict
 # 0. One-file workflow settings
 # =============================================================================
 # Algorithm identity used by the optional training panel.
-ALGORITHM_NAME = "PPO"
+ALGORITHM_NAME = "PPO_BONUS2"
 
 # Default mode when running `python run.py`.
 # Valid values: "train", "eval", "smoke".
@@ -58,7 +55,7 @@ def _now_str() -> str:
 
 
 RUN: Dict[str, Any] = {
-    "experiment_name": f"ppo_sb3_sim2real_balance_{_now_str()}",
+    "experiment_name": f"ppo_bonus2_swingup_{_now_str()}",
     "root_log_dir": "./runs",
     "seed": 42,
 
@@ -67,7 +64,7 @@ RUN: Dict[str, Any] = {
 
     # Determinism improves reproducibility but can slow CUDA training.
     "torch_deterministic": False,
-    "torch_num_threads": 8,
+    "torch_num_threads": 2,
     "device": 'cpu',          # "auto", "cpu", "cuda"
 
     # Env parallelism.  DummyVecEnv is safer cross-platform; SubprocVecEnv is faster.
@@ -84,26 +81,22 @@ ENV: Dict[str, Any] = {
     # Physical integration and policy output are both 200 Hz when action_repeat=1.
     "physical_dt": 0.005,
     "action_repeat": 1,
-    "max_physical_steps": 3000,  # 15 s at 200 Hz before action repeat
-
-    # Continuous normalized action in [-1, 1] mapped to PWM.
+    "max_physical_steps": 2000,  # 10 s at 200 Hz
     "action_type": "continuous",
-    "pwm_limit": 255.0,
+    "pwm_limit": 150.0,
 
-    # History input is important for unknown dynamics/domain randomization.
-    # trig base obs = [sin(theta), cos(theta), theta_dot, sin(alpha), cos(alpha), alpha_dot]
-    # trig_hist4_act4 => 4*6 + 4 = 28 dims.
-    "observation_type": 'trig_hist4_act4',
+    # 7-D observation matching TD3 / compact deploy.
+    "observation_type": 'trig_hist1_act1',
     "clip_velocity_in_obs": True,
 
-    # Initial distribution for upright balance. Randomization curriculum may widen this.
-    "init_mode": "balance_random_small",
+    # Hanging start for full swing-up (Bonus 2).
+    "init_mode": "downward",
     "init_theta_mean_deg": 0.0,
-    "init_theta_std_deg": 3.0,
+    "init_theta_std_deg": 25.98076211353316,
     "init_theta_dot_mean": 0.0,
     "init_theta_dot_std": 0.0,
-    "init_alpha_mean_deg": 0.0,
-    "init_alpha_std_deg": 5.0,
+    "init_alpha_mean_deg": 180.0,
+    "init_alpha_std_deg": 25.98076211353316,
     "init_alpha_dot_mean": 0.0,
     "init_alpha_dot_std": 0.0,
 
@@ -111,7 +104,7 @@ ENV: Dict[str, Any] = {
     "theta_limit": 12.0 * np.pi,
     "theta_dot_limit": 45.0,
     "alpha_dot_limit": 40.0,
-    "terminate_on_alpha_abs_deg": True,
+    "terminate_on_alpha_abs_deg": False,
     "alpha_abs_limit_deg": 45.0,
 
     # Fixed observation noise remains off; episode-level sensor randomization is below.
@@ -187,8 +180,8 @@ DOMAIN_RANDOMIZATION: Dict[str, Any] = {
     },
 
     # Initial-state randomization curriculum for upright balance.
-    "init_theta_std_deg_range": (1.0, 8.0),
-    "init_alpha_std_deg_range": (1.0, 12.0),
+    "init_theta_std_deg_range": (5.0, 30.0),
+    "init_alpha_std_deg_range": (8.0, 30.0),
     "init_theta_dot_std_range": (0.0, 1.5),
     "init_alpha_dot_std_range": (0.0, 2.5),
 
@@ -226,7 +219,7 @@ DOMAIN_RANDOMIZATION: Dict[str, Any] = {
 # 5. PPO hyperparameters, using Stable-Baselines3 PPO
 # =============================================================================
 PPO: Dict[str, Any] = {
-    "total_timesteps": 2000000,
+    "total_timesteps": 3000000,
     "n_envs": 16,
     "n_steps": 1024,
     "batch_size": 1024,
@@ -241,11 +234,9 @@ PPO: Dict[str, Any] = {
     "max_grad_norm": 0.5,
     "normalize_advantage": True,
 
-    # Network architecture.  256x256 is a serious baseline for low-dimensional
-    # sim-to-real balance with history input; increase later only if ablations justify it.
-    "net_arch_pi": (256, 256),
-    "net_arch_vf": (256, 256),
-    "activation_fn_name": 'Tanh',  # ReLU, Tanh, ELU, SiLU, LeakyReLU
+    "net_arch_pi": (64, 64),
+    "net_arch_vf": (64, 64),
+    "activation_fn_name": 'ReLU',  # match TD3-style Bonus-2 deploy (ReLU/ReLU/Tanh)
     "log_std_init": -0.7,
 
     # VecNormalize is important for PPO stability under randomized observations/rewards.
@@ -262,16 +253,19 @@ PPO: Dict[str, Any] = {
 # =============================================================================
 # 6. Balance reward
 # =============================================================================
+# TD3-aligned gated swing-up reward (Bonus 2).
 REWARD: Dict[str, Any] = {
-    "k_cos": 8.0,
-    "k_alpha": 2.0,
-    "k_alpha_dot": 0.015,
-    "k_theta": 0.15,
-    "k_theta_dot": 0.01,
-    "k_action": 0.0005,
-    "alive": 0.25,
-    "angle_penalty_deg": 20.0,
-    "angle_penalty_value": 3.0,
+    "base_reward": 1.0,
+    "a_theta": 0.001,
+    "a_alpha": 8.0,
+    "a_theta_dot": 0.001,
+    "a_alpha_dot": 0.005,
+    "a_u": 0.5,
+    "a_du": 0.0,
+    "gate_theta_max_rad": 1.0471975511965976,
+    "gate_theta_dot_max": 5.0,
+    "gate_alpha_max_deg": 12.0,
+    "gate_alpha_dot_max": 2.0,
 }
 
 
@@ -281,7 +275,7 @@ REWARD: Dict[str, Any] = {
 EVAL: Dict[str, Any] = {
     "eval_freq": 25001,
     "n_eval_episodes": 8,
-    "max_eval_policy_steps": 3000,
+    "max_eval_policy_steps": 2000,
     "checkpoint_freq": 50000,
     "save_best_model": True,
     "eval_randomization_level": 0.75,
@@ -445,40 +439,50 @@ def build_done_fn():
     return build_done_fn_from_dict(done_cfg)
 
 
+def _get_env_step_count(env) -> int:
+    for name in (
+        "step_count", "current_step", "_step_count", "_current_step",
+        "elapsed_steps", "_elapsed_steps", "t", "_t",
+    ):
+        if hasattr(env, name):
+            try:
+                return int(getattr(env, name))
+            except Exception:
+                pass
+    return 999999
+
+
 def build_reward_fn():
-    k_cos = float(REWARD["k_cos"])
-    k_alpha = float(REWARD["k_alpha"])
-    k_alpha_dot = float(REWARD["k_alpha_dot"])
-    k_theta = float(REWARD["k_theta"])
-    k_theta_dot = float(REWARD["k_theta_dot"])
-    k_action = float(REWARD["k_action"])
-    alive = float(REWARD["alive"])
-    angle_penalty = np.deg2rad(float(REWARD["angle_penalty_deg"]))
-    angle_penalty_value = float(REWARD["angle_penalty_value"])
-    theta_dot_limit = float(ENV["theta_dot_limit"])
-    alpha_dot_limit = float(ENV["alpha_dot_limit"])
-    pwm_limit = float(ENV["pwm_limit"])
+    """TD3-style gated upright bonus minus quadratic costs (Bonus-2 swing-up)."""
+    r = REWARD
 
     def _reward_fn(state, action, next_state, env) -> float:
-        theta, theta_dot, alpha_raw, alpha_dot = np.asarray(next_state, dtype=np.float64).reshape(4)
-        alpha = wrap_to_pi(float(alpha_raw))
-        theta = wrap_to_pi(float(theta))
-        theta_dot = float(np.clip(float(theta_dot), -theta_dot_limit, theta_dot_limit))
-        alpha_dot = float(np.clip(float(alpha_dot), -alpha_dot_limit, alpha_dot_limit))
-        pwm_norm = float(getattr(env, "last_pwm", 0.0)) / max(float(getattr(env, "continuous_pwm_limit", pwm_limit)), 1e-6)
-        pwm_norm = float(np.clip(pwm_norm, -1.0, 1.0))
-
-        reward = (
-            alive
-            + k_cos * float(np.cos(alpha))
-            - k_alpha * (alpha ** 2)
-            - k_alpha_dot * (alpha_dot ** 2)
-            - k_theta * (theta ** 2)
-            - k_theta_dot * (theta_dot ** 2)
-            - k_action * (pwm_norm ** 2)
-            - angle_penalty_value * float(abs(alpha) > angle_penalty)
+        theta, theta_dot, alpha, alpha_dot = map(
+            float, np.asarray(next_state, dtype=np.float64).reshape(4)
         )
-        return float(reward)
+        u = float(np.clip(np.asarray(action, dtype=float).reshape(-1)[0], -1.0, 1.0))
+        step_count = _get_env_step_count(env)
+        if (not hasattr(env, "bonus2_prev_u")) or step_count <= 1:
+            env.bonus2_prev_u = 0.0
+        du = u - float(env.bonus2_prev_u)
+        env.bonus2_prev_u = u
+        alpha_wrap = wrap_to_pi(alpha)
+        gate = (
+            abs(theta) < float(r["gate_theta_max_rad"])
+            and abs(theta_dot) < float(r["gate_theta_dot_max"])
+            and abs(alpha_wrap) < np.deg2rad(float(r["gate_alpha_max_deg"]))
+            and abs(alpha_dot) < float(r["gate_alpha_dot_max"])
+        )
+        p_k = float(r["base_reward"]) if gate else 0.0
+        cost = (
+            float(r["a_theta"]) * theta * theta
+            + float(r["a_alpha"]) * alpha_wrap * alpha_wrap
+            + float(r["a_theta_dot"]) * theta_dot * theta_dot
+            + float(r["a_alpha_dot"]) * alpha_dot * alpha_dot
+            + float(r["a_u"]) * u * u
+            + float(r["a_du"]) * du * du
+        )
+        return float(p_k - cost)
 
     return _reward_fn
 

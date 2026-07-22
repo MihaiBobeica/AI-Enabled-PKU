@@ -8,8 +8,14 @@
 **/*.bak.*
 **/__MACOSX/
 
-# Suite runtime artifacts (code + pristine configs are tracked)
-suite/suite_logs/
-suite/suite_state.json
-suite/suite_experiment_log.csv
-suite/BEST.md
+# Optuna search runtime artifacts (scripts stay tracked)
+**/optuna_study*.db
+**/optuna_study*.db-*
+**/search_results*.csv
+**/BEST*.json
+**/search_state*.json
+**/search_logs*/
+**/best_run*/
+**/figures*/optimization_history.png
+**/figures*/param_importance.png
+**/best_config_overrides*.json
