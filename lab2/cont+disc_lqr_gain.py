@@ -25,7 +25,7 @@ Ts = 0.005
 # Q prioritizes states [theta, theta_dot, alpha, alpha_dot]
 Q = np.diag([1.0, 0.1, 10.0, 1.0])
 # R penalizes control effort
-R = np.array([[0.01]])
+R = np.array([[0.3]])
 
 print("=== Continuous-Model Design ===")
 # Solve Continuous Algebraic Riccati Equation (CARE)
