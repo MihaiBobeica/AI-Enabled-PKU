@@ -88,7 +88,22 @@ if __name__ == "__main__":
         metrics = compute_metrics(input_file)
         results.append((i,) + metrics)
 
-        print(f"Results of trial {i} written")
+    # Keep only successful runs
+    successful = [r[1:] for r in results if r[1] is not None]
+
+    num_success = len(successful)
+    num_failed = len(results) - num_success
+
+    if num_success == 0:
+        raise RuntimeError("No successful runs.")
+
+    metrics = np.array(successful)
+
+    # Mean over successful runs
+    means = np.mean(metrics, axis=0)
+
+    # Standard deviation over successful runs
+    stds = np.std(metrics, axis=0, ddof=0)
 
     with open(output_file, "w") as f:
         for trial, stable_time, mean_alpha, std_alpha, mean_pwm, std_pwm, max_overshoot in results:
@@ -101,5 +116,21 @@ if __name__ == "__main__":
                 f"{std_pwm:.3f} & "
                 f"{max_overshoot:.6f}\\\\\n"
             )
+            
+        f.write("\n")
+
+        f.write(f"Successful runs: {num_success}\n")
+        f.write(f"Failed runs: {num_failed}\n\n")
+
+        # Summary row in LaTeX format
+        f.write(
+            "& "
+            f"{means[0]:.4f} $\\pm$ {stds[0]:.4f} & "
+            f"{means[1]:.6f} $\\pm$ {stds[1]:.6f} & "
+            f"{means[2]:.6f} $\\pm$ {stds[2]:.6f} & "
+            f"{means[3]:.3f} $\\pm$ {stds[3]:.3f} & "
+            f"{means[4]:.3f} $\\pm$ {stds[4]:.3f} & "
+            f"{means[5]:.6f} $\\pm$ {stds[5]:.6f}\\\\\n"
+        )
 
     print(f"Results written to {output_file}")
