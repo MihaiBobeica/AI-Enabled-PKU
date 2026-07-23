@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import os
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -386,6 +387,16 @@ def _select_deployment_model(run_dir: Path) -> Tuple[Path, str, Dict[str, Any]]:
 
 
 def run_training(*, smoke: bool = False) -> Dict[str, Any]:
+    if os.environ.get("OVERNIGHT_APPLY_BEST") == "1":
+        overrides_path = Path(__file__).resolve().parent / "best_config_overrides.json"
+        if overrides_path.exists():
+            data = json.loads(overrides_path.read_text(encoding="utf-8")).get("TD3", {})
+            config.TD3.update(data)
+            config.TD3["total_timesteps"] = int(config.TD3.get("total_timesteps", 5_000_000))
+            print(f"[OVERNIGHT] applied {overrides_path.name}: {data}", flush=True)
+        else:
+            print("[OVERNIGHT] missing best_config_overrides.json; using config.py", flush=True)
+
     run_dir = Path(config.make_run_dir()).resolve()
     ensure_dir(run_dir)
     dump_json(run_dir / "config_snapshot.json", config_snapshot())

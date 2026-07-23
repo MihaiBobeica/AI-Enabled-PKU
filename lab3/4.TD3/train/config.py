@@ -40,8 +40,8 @@ RUN: Dict[str, Any] = {
     "seed": 42,
     "prefer_local_stable_baselines3": True,
     "torch_deterministic": False,
-    "torch_num_threads": 4,
-    "device": 'auto',
+    "torch_num_threads": 2,
+    "device": 'cpu',            # CPU for this MLP + env-sim workload
     "vec_env_type": 'dummy',
 }
 
@@ -266,7 +266,7 @@ DISTILL: Dict[str, Any] = {
     "eval_episodes": 16,
     "eval_max_policy_steps": 1000,
     "seed": 123,
-    "device": "auto",
+    "device": "cpu",
 }
 
 TEST: Dict[str, Any] = {

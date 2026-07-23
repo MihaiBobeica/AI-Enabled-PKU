@@ -1,0 +1,10 @@
+# Lab3 overnight / train / Optuna (DQN, PPO, TD3)
+# PPO/TD3 also ship local gymnasium + stable_baselines3 under their train folders.
+
+numpy>=1.24
+torch>=2.3,<3.0
+matplotlib>=3.7
+pandas>=2.0
+optuna>=3.0
+PyQt5>=5.15
+pyserial>=3.5

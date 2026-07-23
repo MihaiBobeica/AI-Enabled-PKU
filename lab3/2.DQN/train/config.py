@@ -29,7 +29,7 @@ RUN: Dict[str, Any] = {
     "root_log_dir": './runs',
     "seed": 42,
     "device": 'cpu',              # auto, cpu, mps, cuda
-    "torch_num_threads": 4,
+    "torch_num_threads": 2,
     "torch_deterministic": False,
     "prefer_local_stable_baselines3": True,
     "prefer_local_third_party": True,
@@ -169,7 +169,7 @@ DQN: Dict[str, Any] = {
     "weight_init_std": 0.01,
     "huber_delta": 1.0,
     "max_grad_norm": 0.0,          # 0 disables clipping, matching MATLAB.
-    "use_double_dqn": False,
+    "use_double_dqn": True,  # stronger than course zip vanilla DQN; overnight default
 
     "exploration_initial_eps": 1.0,
     "exploration_final_eps": 0.001,

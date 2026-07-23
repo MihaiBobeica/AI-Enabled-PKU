@@ -1,0 +1,60 @@
+{
+  "source": "Course zip configs (dqn.zip / ppo.zip / td3.zip) and Lab Report 3 template",
+  "dqn": {
+    "total_timesteps": 5000000,
+    "stages": [2000000, 1000000, 1000000, 1000000],
+    "stage_levels": [0.0, 0.1, 0.3, 0.5],
+    "network": "6 -> 64 -> 64 -> 10 ReLU",
+    "learning_rate": 0.0005,
+    "gamma": 0.95,
+    "buffer_size": 30000,
+    "batch_size": 512,
+    "learning_starts": 2000,
+    "use_double_dqn": false,
+    "exploration": {"initial_eps": 1.0, "final_eps": 0.001, "decay": 400000.0},
+    "n_envs": 4
+  },
+  "ppo": {
+    "total_timesteps": 2000000,
+    "n_envs": 16,
+    "n_steps": 1024,
+    "batch_size": 1024,
+    "n_epochs": 10,
+    "learning_rate": 0.0003,
+    "gamma": 0.9975,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "target_kl": 0.035,
+    "ent_coef": 0.002,
+    "net_arch": [256, 256]
+  },
+  "td3": {
+    "total_timesteps": 5000000,
+    "stages": [2000000, 1000000, 1000000, 1000000],
+    "stage_levels": [0.0, 0.1, 0.3, 0.5],
+    "buffer_size": 1000000,
+    "learning_starts": 10000,
+    "batch_size": 128,
+    "actor_learning_rate": 0.0001,
+    "critic_learning_rate": 0.001,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "policy_delay": 2,
+    "action_noise_sigma": 0.1,
+    "target_policy_noise": 0.2,
+    "target_noise_clip": 0.5,
+    "net_arch": [64, 64]
+  },
+  "mpc_defaults": {
+    "horizon": 8,
+    "q_theta": 1.0,
+    "q_theta_dot": 0.05,
+    "q_alpha": 80.0,
+    "q_alpha_dot": 2.0,
+    "r_input": 0.001,
+    "pgd_iterations": 16,
+    "estimator": "differential",
+    "velocity_lpf": 0.25
+  },
+  "note": "Fill student_vs_course metric rows in the report after full overnight trains using Tables 9/14/19."
+}

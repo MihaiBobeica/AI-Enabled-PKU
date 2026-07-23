@@ -1,0 +1,55 @@
+{
+  "run_dir": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501",
+  "smoke": true,
+  "algorithm": "TD3",
+  "timesteps": 75000,
+  "observation_shape": [
+    7
+  ],
+  "action_shape": [
+    1
+  ],
+  "replay_observation_shape": [
+    150000,
+    1,
+    7
+  ],
+  "stage_names": [
+    "smoke_nominal",
+    "smoke_randomization_0.10"
+  ],
+  "stage_levels": [
+    0.0,
+    0.1
+  ],
+  "stage_steps": [
+    56250,
+    18750
+  ],
+  "stage_transitions": [
+    {
+      "stage": 2,
+      "stage_name": "smoke_randomization_0.10",
+      "level": 0.1,
+      "step": 56250,
+      "replay_size_before": 56250,
+      "replay_size_after": 0,
+      "replay_cleared": true,
+      "optimizer_reset": true,
+      "target_synced": true,
+      "action_noise_reset": true,
+      "warmup_steps": 1875
+    }
+  ],
+  "nominal_recovery_last": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501\\recovery_model\\nominal_2m_last.zip",
+  "best_nominal_model": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501\\best_nominal_model\\best_model.zip",
+  "best_randomized_model": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501\\best_randomized_model\\best_model.zip",
+  "best_model": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501\\best_model\\best_model.zip",
+  "selected_best_model": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0373_20260722_194501\\selected_best_model.zip",
+  "selected_reason": "nominal_fallback",
+  "early_stopped": false,
+  "early_stop_reason": "",
+  "vecnormalize_created": false,
+  "input_dim": 7,
+  "continuous_action_dim": 1
+}

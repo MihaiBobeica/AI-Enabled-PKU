@@ -67,7 +67,7 @@ RUN: Dict[str, Any] = {
 
     # Determinism improves reproducibility but can slow CUDA training.
     "torch_deterministic": False,
-    "torch_num_threads": 8,
+    "torch_num_threads": 2,
     "device": 'cpu',          # "auto", "cpu", "cuda"
 
     # Env parallelism.  DummyVecEnv is safer cross-platform; SubprocVecEnv is faster.

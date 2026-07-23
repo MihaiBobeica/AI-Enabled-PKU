@@ -1,0 +1,12 @@
+{
+  "pwm_safety_limit": 150,
+  "test_duration_s": 10.0,
+  "capture_angle_threshold_deg": 15.0,
+  "stable_angle_threshold_deg": 15.0,
+  "stable_velocity_threshold": 1.0,
+  "required_stable_duration_s": 1.0,
+  "simulation_seed_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "sim_randomization_levels": [0.0],
+  "control_rate_hz": 200,
+  "notes": "Confirm these values before the fixed 10x10 campaigns. Keep identical across MPC/DQN/PPO/TD3 unless software forces an exception."
+}
