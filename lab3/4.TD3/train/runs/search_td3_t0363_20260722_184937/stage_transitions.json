@@ -1,0 +1,15 @@
+[
+  {
+    "stage": 2,
+    "stage_name": "smoke_randomization_0.10",
+    "level": 0.1,
+    "step": 56250,
+    "replay_size_before": 56250,
+    "replay_size_after": 0,
+    "replay_cleared": true,
+    "optimizer_reset": true,
+    "target_synced": true,
+    "action_noise_reset": true,
+    "warmup_steps": 1875
+  }
+]

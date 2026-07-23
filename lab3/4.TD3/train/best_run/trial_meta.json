@@ -1,0 +1,33 @@
+{
+  "score": -0.04475542663566401,
+  "trial": 375,
+  "params": {
+    "action_noise_sigma": 0.10315809218318725,
+    "critic_learning_rate": 0.0006468827531380644,
+    "batch_size": 128
+  },
+  "run_dir": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0375_20260722_195608",
+  "updated_at": "2026-07-22T18:01:41+00:00",
+  "is_baseline": false,
+  "extra": {
+    "metrics": {
+      "episodes": 3,
+      "mean_reward": -10036.953378906139,
+      "mean_length": 500.0,
+      "stable_success_rate": 0.0,
+      "capture_rate": 1.0,
+      "termination_rate": 0.0,
+      "mean_abs_theta": 1.284913039344594,
+      "mean_abs_theta_dot": 3.441561327296331,
+      "mean_abs_alpha": 1.1696558498847718,
+      "mean_abs_alpha_dot": 5.239549583314383,
+      "mean_abs_pwm": 89.72635891642089,
+      "mean_pwm_abs_norm": 0.5981757261094726,
+      "control_score": -10044.755426635664,
+      "step": 75000,
+      "phase": "randomized",
+      "eval_randomization_level": 0.1
+    },
+    "budget": 75000
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "selected_from": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0358_20260722_182027\\best_nominal_model\\best_model.zip",
+  "selection_reason": "nominal_fallback",
+  "selection_metrics": {
+    "episodes": 3,
+    "mean_reward": -14961.289937942702,
+    "mean_length": 500.0,
+    "stable_success_rate": 0.0,
+    "capture_rate": 0.0,
+    "termination_rate": 0.0,
+    "mean_abs_theta": 1.9315869304086615,
+    "mean_abs_theta_dot": 4.001462984018024,
+    "mean_abs_alpha": 1.7139718696710642,
+    "mean_abs_alpha_dot": 8.189988887872373,
+    "mean_abs_pwm": 102.37459907531736,
+    "mean_pwm_abs_norm": 0.6824973271687824,
+    "control_score": -14977.085768893909,
+    "step": 45000,
+    "phase": "nominal",
+    "eval_randomization_level": 0.0
+  },
+  "minimum_randomized_success_rate": 0.6
+}

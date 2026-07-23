@@ -1,0 +1,6 @@
+{
+  "step": 56250,
+  "expected_step": 56250,
+  "next_randomization_level": 0.1,
+  "best_nominal_model": "C:\\Users\\Melissa\\PKU\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\search_td3_t0365_20260722_190044\\best_nominal_model\\best_model.zip"
+}
