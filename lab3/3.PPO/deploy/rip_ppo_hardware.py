@@ -229,10 +229,15 @@ class ModelUploadThread(QtCore.QThread):
 
     progress = QtCore.pyqtSignal(int, str)
     completed = QtCore.pyqtSignal(bool, str, object)
-    CHUNK_BYTES = 96
+    # Conservative serial transport settings.  The model format is unchanged;
+    # only the ASCII-hex transport is made less bursty for ST-Link/USB CDC links.
+    CHUNK_BYTES = 32
     CHUNK_RETRIES = 10
-    READY_SETTLE_SECONDS = 0.050
-    INTER_CHUNK_SECONDS = 0.002
+    READY_SETTLE_SECONDS = 0.150
+    INTER_CHUNK_SECONDS = 0.006
+    WRITE_BURST_BYTES = 16
+    WRITE_BURST_PAUSE_SECONDS = 0.0015
+    FORMAT_RETRY_PAUSE_SECONDS = 0.080
 
     def __init__(self, panel: "MainWindow", model: PPOModel, token: int, config: PanelConfig):
         super().__init__(panel)
@@ -310,15 +315,25 @@ class ModelUploadThread(QtCore.QThread):
 
         for _ in range(self.CHUNK_RETRIES):
             self.ensure_active()
-            if not self.panel.send_line(line, generation=self.generation):
+            if not self.panel.send_line_paced(
+                line,
+                generation=self.generation,
+                burst_bytes=self.WRITE_BURST_BYTES,
+                pause_seconds=self.WRITE_BURST_PAUSE_SECONDS,
+            ):
                 raise ConnectionError(f"Chunk line write failed at byte {start}")
             try:
-                reply = self.wait_model_line((expected_lead,), timeout=5.0)
+                reply = self.wait_model_line((expected_lead,), timeout=2.0)
             except TimeoutError as exc:
                 last_error = exc
+                time.sleep(self.FORMAT_RETRY_PAUSE_SECONDS)
                 continue
             if reply.startswith("ERR,MODEL"):
                 last_error = RuntimeError(reply)
+                # MODEL_HEX_CHUNK_FORMAT means the serial line arrived truncated
+                # or corrupted.  The firmware keeps the current upload session and
+                # expected offset, so retry exactly the same chunk on this connection.
+                time.sleep(self.FORMAT_RETRY_PAUSE_SECONDS)
                 continue
             parts = reply.split(",")
             try:
@@ -574,6 +589,44 @@ class MainWindow(QtWidgets.QMainWindow):
             return True
         except Exception as exc:
             self.error_queue.put((self.connection_generation,str(exc))); return False
+    def send_line_paced(self, line, generation=None, burst_bytes=16, pause_seconds=0.0015):
+        """Write one ASCII command as short flushed bursts on the same connection.
+
+        This is used only for model hex chunks.  It prevents a long host-side USB
+        burst from overflowing a small STM32/ST-Link receive ring buffer.  It does
+        not refresh, reconnect, reset, or alter the model-upload session.
+        """
+        if not self.connected or self.serial is None:
+            return False
+        if generation is not None and int(generation) != self.connection_generation:
+            return False
+        data=(line.strip()+"\n").encode("ascii")
+        burst=max(1,int(burst_bytes))
+        try:
+            with self.serial_lock:
+                port=self.serial
+                if port is None:
+                    return False
+                offset=0
+                while offset < len(data):
+                    if generation is not None and int(generation) != self.connection_generation:
+                        return False
+                    end=min(len(data),offset+burst)
+                    view=memoryview(data)[offset:end]
+                    local=0
+                    while local < len(view):
+                        written=port.write(view[local:])
+                        if written is None or written <= 0:
+                            raise serial.SerialTimeoutException("zero-byte paced serial write")
+                        local += int(written)
+                    port.flush()
+                    offset=end
+                    if offset < len(data) and pause_seconds > 0.0:
+                        time.sleep(float(pause_seconds))
+            return True
+        except Exception as exc:
+            self.error_queue.put((self.connection_generation,str(exc)))
+            return False
     def send_bytes(self, data: bytes) -> bool:
         if not self.connected or self.serial is None:
             return False
