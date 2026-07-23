@@ -1,0 +1,41 @@
+[
+  {
+    "stage": 2,
+    "stage_name": "randomization_0.10",
+    "level": 0.1,
+    "step": 2000000,
+    "replay_size_before": 1000000,
+    "replay_size_after": 0,
+    "replay_cleared": true,
+    "optimizer_reset": true,
+    "target_synced": true,
+    "action_noise_reset": true,
+    "warmup_steps": 25000
+  },
+  {
+    "stage": 3,
+    "stage_name": "randomization_0.30",
+    "level": 0.3,
+    "step": 3000000,
+    "replay_size_before": 1000000,
+    "replay_size_after": 0,
+    "replay_cleared": true,
+    "optimizer_reset": true,
+    "target_synced": true,
+    "action_noise_reset": true,
+    "warmup_steps": 25000
+  },
+  {
+    "stage": 4,
+    "stage_name": "randomization_0.50",
+    "level": 0.5,
+    "step": 4000000,
+    "replay_size_before": 1000000,
+    "replay_size_after": 0,
+    "replay_cleared": true,
+    "optimizer_reset": true,
+    "target_synced": true,
+    "action_noise_reset": true,
+    "warmup_steps": 25000
+  }
+]

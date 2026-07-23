@@ -1,0 +1,404 @@
+{
+  "RUN": {
+    "experiment_prefix": "search_td3_t0367",
+    "root_log_dir": "./runs",
+    "seed": 409,
+    "prefer_local_stable_baselines3": true,
+    "torch_deterministic": false,
+    "torch_num_threads": 2,
+    "device": "cpu",
+    "vec_env_type": "dummy"
+  },
+  "ENV": {
+    "env_id": "RIPSim2RealBalance-v0",
+    "physical_dt": 0.005,
+    "action_repeat": 1,
+    "max_physical_steps": 1000,
+    "action_type": "continuous",
+    "pwm_limit": 150.0,
+    "discrete_actions_compat": [
+      -150,
+      -120,
+      -90,
+      -60,
+      -30,
+      30,
+      60,
+      90,
+      120,
+      150
+    ],
+    "observation_type": "trig_hist1_act1",
+    "state_history_len": 1,
+    "action_history_len": 1,
+    "observation_dim": 7,
+    "fixed_observation_scaling": false,
+    "clip_velocity_in_obs": true,
+    "init_mode": "downward",
+    "init_theta_mean_deg": 0.0,
+    "init_theta_std_deg": 25.98076211353316,
+    "init_theta_dot_mean": 0.0,
+    "init_theta_dot_std": 0.0,
+    "init_alpha_mean_deg": 180.0,
+    "init_alpha_std_deg": 25.98076211353316,
+    "init_alpha_dot_mean": 0.0,
+    "init_alpha_dot_std": 0.0,
+    "theta_limit": 37.69911184307752,
+    "theta_dot_limit": 45.0,
+    "alpha_dot_limit": 40.0,
+    "terminate_on_alpha_abs_deg": false,
+    "alpha_abs_limit_deg": 45.0,
+    "fixed_noise_enabled": false,
+    "fixed_noise_theta_sigma": 0.0,
+    "fixed_noise_alpha_sigma": 0.0,
+    "fixed_noise_theta_dot_sigma": 0.0,
+    "fixed_noise_alpha_dot_sigma": 0.0,
+    "use_lpf_velocity": false,
+    "velocity_lpf": 0.25,
+    "env_logging_enabled": true,
+    "env_save_step_log": false,
+    "env_flush_every_step": false
+  },
+  "PHYSICAL_PARAMS": {
+    "g": 9.8,
+    "c_theta": 0.025,
+    "c_alpha": 0.001,
+    "k_t": 0.231,
+    "k_b": 0.1875,
+    "k_u": 0.04706,
+    "R": 4.2857,
+    "m1": 0.20625,
+    "m2": 0.15845,
+    "l1cg": 0.080305,
+    "l1": 0.151894,
+    "l2cg": 0.066733,
+    "I1z": 0.00049228,
+    "I2x": 0.00036892,
+    "I2y": 2.3641e-05,
+    "I2z": 0.00036139
+  },
+  "DOMAIN_RANDOMIZATION": {
+    "enabled": true,
+    "dr_initial_level": 0.0,
+    "dr_final_level": 0.5,
+    "dr_curriculum_fraction": 1.0,
+    "training_stage_names": [
+      "nominal_original_alignment",
+      "randomization_0.10",
+      "randomization_0.30",
+      "randomization_0.50"
+    ],
+    "training_stage_levels": [
+      0.0,
+      0.1,
+      0.3,
+      0.5
+    ],
+    "training_stage_steps": [
+      2000000,
+      1000000,
+      1000000,
+      1000000
+    ],
+    "training_stage_fractions": [
+      0.4,
+      0.2,
+      0.2,
+      0.2
+    ],
+    "nominal_recovery_steps": 2000000,
+    "clear_replay_between_stages": true,
+    "reset_optimizer_between_stages": true,
+    "sync_target_between_stages": true,
+    "reset_action_noise_between_stages": true,
+    "stage_replay_warmup_steps": 25000,
+    "param_scale_ranges": {
+      "g_scale": [
+        0.98,
+        1.02
+      ],
+      "m1_scale": [
+        0.9,
+        1.1
+      ],
+      "m2_scale": [
+        0.9,
+        1.1
+      ],
+      "l1_scale": [
+        0.9,
+        1.1
+      ],
+      "l1cg_scale": [
+        0.9,
+        1.1
+      ],
+      "l2cg_scale": [
+        0.9,
+        1.1
+      ],
+      "I1z_scale": [
+        0.9,
+        1.1
+      ],
+      "I2x_scale": [
+        0.9,
+        1.1
+      ],
+      "I2y_scale": [
+        0.9,
+        1.1
+      ],
+      "I2z_scale": [
+        0.9,
+        1.1
+      ],
+      "c_theta_scale": [
+        0.5,
+        2.0
+      ],
+      "c_alpha_scale": [
+        0.5,
+        2.0
+      ],
+      "k_t_scale": [
+        0.9,
+        1.1
+      ],
+      "k_b_scale": [
+        0.9,
+        1.1
+      ],
+      "k_u_scale": [
+        0.9,
+        1.1
+      ],
+      "R_scale": [
+        0.9,
+        1.1
+      ]
+    },
+    "init_theta_std_deg_range": [
+      2.0,
+      10.0
+    ],
+    "init_alpha_std_deg_range": [
+      4.0,
+      16.0
+    ],
+    "init_theta_dot_std_range": [
+      0.0,
+      1.5
+    ],
+    "init_alpha_dot_std_range": [
+      0.0,
+      2.5
+    ],
+    "pwm_limit_scale_range": [
+      0.8,
+      1.05
+    ],
+    "pwm_gain_range": [
+      0.9,
+      1.1
+    ],
+    "pwm_bias_range": [
+      -4.0,
+      4.0
+    ],
+    "pwm_deadzone_range": [
+      0.0,
+      10.0
+    ],
+    "pwm_noise_sigma_range": [
+      0.0,
+      2.0
+    ],
+    "actuator_tau_range": [
+      0.0,
+      0.03
+    ],
+    "action_delay_steps_range": [
+      0,
+      0
+    ],
+    "theta_bias_range": [
+      -0.01,
+      0.01
+    ],
+    "alpha_bias_range": [
+      -0.012,
+      0.012
+    ],
+    "theta_sigma_range": [
+      0.0,
+      0.006
+    ],
+    "alpha_sigma_range": [
+      0.0,
+      0.02
+    ],
+    "theta_dot_sigma_range": [
+      0.0,
+      0.35
+    ],
+    "alpha_dot_sigma_range": [
+      0.0,
+      0.6
+    ],
+    "encoder_quantization_rad_range": [
+      0.0,
+      0.0015
+    ],
+    "use_lpf_velocity_probability": 0.5,
+    "velocity_lpf_range": [
+      0.2,
+      0.3
+    ],
+    "process_theta_dot_sigma_range": [
+      0.0,
+      0.0
+    ],
+    "process_alpha_dot_sigma_range": [
+      0.0,
+      0.0
+    ]
+  },
+  "TD3": {
+    "total_timesteps": 5000000,
+    "n_envs": 1,
+    "buffer_size": 1000000,
+    "learning_starts": 10000,
+    "batch_size": 64,
+    "actor_learning_rate": 0.0001,
+    "critic_learning_rate": 0.001919916198559407,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "train_freq": 1,
+    "gradient_steps": 1,
+    "policy_delay": 2,
+    "target_policy_noise": 0.2,
+    "target_noise_clip": 0.5,
+    "actor_grad_clip": 1.0,
+    "critic_grad_clip": 1.0,
+    "action_noise_sigma": 0.06774807131252975,
+    "net_arch_pi": [
+      64,
+      64
+    ],
+    "net_arch_qf": [
+      64,
+      64
+    ],
+    "activation_fn_name": "ReLU",
+    "optimize_memory_usage": false,
+    "normalize_obs": false,
+    "normalize_reward": false,
+    "save_replay_buffer": false,
+    "verbose": 1,
+    "progress_bar": false
+  },
+  "REWARD": {
+    "base_reward": 1.0,
+    "a_theta": 0.001,
+    "a_alpha": 8.0,
+    "a_theta_dot": 0.001,
+    "a_alpha_dot": 0.005,
+    "a_u": 0.5,
+    "a_du": 0.0,
+    "gate_theta_max_rad": 1.0471975511965976,
+    "gate_theta_dot_max": 5.0,
+    "gate_alpha_max_deg": 12.0,
+    "gate_alpha_dot_max": 2.0
+  },
+  "EVAL": {
+    "eval_freq": 20000,
+    "n_eval_episodes": 5,
+    "max_eval_policy_steps": 1000,
+    "checkpoint_freq": 100000,
+    "save_best_model": true,
+    "nominal_eval_randomization_level": 0.0,
+    "eval_randomization_level": 0.5,
+    "selected_model_min_success_rate": 0.6,
+    "capture_angle_deg": 12.0,
+    "stable_alpha_dot_max": 2.0,
+    "stable_hold_seconds": 2.0,
+    "early_stop_enabled": false,
+    "early_stop_start_fraction": 0.85,
+    "early_stop_patience_evals": 8,
+    "early_stop_min_success_rate": 0.8,
+    "early_stop_reward_min_delta": 1.0
+  },
+  "DISTILL": {
+    "targets": "current",
+    "student_hidden_sizes": [
+      64,
+      64
+    ],
+    "student_activation": "ReLU",
+    "dagger_iterations": 6,
+    "collect_steps_per_iter": 30000,
+    "max_dataset_size": 250000,
+    "first_iter_teacher_rollout": true,
+    "student_action_probability": 0.5,
+    "collect_randomization_levels": [
+      0.0,
+      0.1,
+      0.3,
+      0.5
+    ],
+    "epochs_per_iter": 25,
+    "batch_size": 2048,
+    "learning_rate": 0.001,
+    "weight_decay": 1e-06,
+    "grad_clip_norm": 1.0,
+    "val_fraction": 0.1,
+    "eval_randomization_level": 0.5,
+    "eval_episodes": 16,
+    "eval_max_policy_steps": 1000,
+    "seed": 123,
+    "device": "cpu"
+  },
+  "TEST": {
+    "duration_seconds": 30.0,
+    "randomization_level": 0.5,
+    "seed": 2026
+  },
+  "SMOKE": {
+    "total_timesteps": 75000,
+    "stage_names": [
+      "smoke_nominal",
+      "smoke_randomization_0.10"
+    ],
+    "stage_levels": [
+      0.0,
+      0.1
+    ],
+    "stage_steps": [
+      56250,
+      18750
+    ],
+    "stage_replay_warmup_steps": 1875,
+    "buffer_size": 150000,
+    "learning_starts": 1000,
+    "batch_size": 64,
+    "train_freq": 1,
+    "gradient_steps": 1,
+    "eval_freq": 15000,
+    "n_eval_episodes": 3,
+    "max_eval_policy_steps": 500,
+    "checkpoint_freq": 37500,
+    "distill_collect_steps": 128,
+    "distill_epochs": 1,
+    "test_duration_seconds": 0.25
+  },
+  "PANEL": {
+    "progress_update_freq": 2000,
+    "episode_curve_max_points": 2000,
+    "dr_audit_freq": 20000,
+    "save_dr_audit_csv": true,
+    "auto_save_before_run": true,
+    "window_geometry": "1420x900",
+    "lock_config_while_running": true
+  }
+}
