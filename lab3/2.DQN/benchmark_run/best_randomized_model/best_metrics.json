@@ -1,0 +1,20 @@
+{
+  "episodes": 3,
+  "randomization_level": 0.5,
+  "mean_episode_reward": -6382.745533726299,
+  "mean_reward_per_step": -3.1059830887734896,
+  "mean_length": 1978.6666666666667,
+  "mean_maintain_max_stable": 243.0,
+  "stable_success_rate": 0.0,
+  "capture_rate": 0.6666666666666666,
+  "mean_abs_theta": 7.7020781185126905,
+  "mean_abs_theta_dot": 3.11625197082863,
+  "mean_abs_alpha": 1.424799575862247,
+  "mean_abs_alpha_dot": 5.925630537944265,
+  "mean_abs_pwm": 112.15359504132232,
+  "step": 2950000,
+  "phase": "randomized",
+  "stage_name": "randomization_0.10",
+  "training_level": 0.1,
+  "eval_randomization_level": 0.5
+}

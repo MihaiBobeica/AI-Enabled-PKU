@@ -25,7 +25,7 @@ from typing import Any, Dict
 ALGORITHM_NAME = "DQN"
 
 RUN: Dict[str, Any] = {
-    "experiment_prefix": 'dqn',
+    "experiment_prefix": 'dqn_benchmark',
     "root_log_dir": './runs',
     "seed": 42,
     "device": 'cpu',              # auto, cpu, mps, cuda
@@ -169,7 +169,7 @@ DQN: Dict[str, Any] = {
     "weight_init_std": 0.01,
     "huber_delta": 1.0,
     "max_grad_norm": 0.0,          # 0 disables clipping, matching MATLAB.
-    "use_double_dqn": True,  # stronger than course zip vanilla DQN; overnight default
+    "use_double_dqn": False,  # course zip vanilla DQN benchmark
 
     "exploration_initial_eps": 1.0,
     "exploration_final_eps": 0.001,

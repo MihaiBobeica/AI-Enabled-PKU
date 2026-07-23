@@ -1,0 +1,44 @@
+{
+  "variant": "current",
+  "mode": "direct_teacher_export",
+  "source_model": "/Users/juzhixiang/Desktop/rip_dqn_matlab_repro_panel_hotfix/runs/dqn_matlab_repro_2m_then_dr_20260719_224320/selected_best_model.pt",
+  "student_checkpoint": "/Users/juzhixiang/Desktop/rip_dqn_matlab_repro_panel_hotfix/runs/dqn_matlab_repro_2m_then_dr_20260719_224320/distillation/current/best/student64.pt",
+  "header": "/Users/juzhixiang/Desktop/rip_dqn_matlab_repro_panel_hotfix/runs/dqn_matlab_repro_2m_then_dr_20260719_224320/distillation/current/best/model_weights.h",
+  "input_dim": 6,
+  "hidden_sizes": [
+    64,
+    64
+  ],
+  "output_dim": 10,
+  "input_pre_scaled": false,
+  "state_history_len": 1,
+  "action_history_len": 0,
+  "velocity_lpf": 0.25,
+  "actions_pwm": [
+    -150,
+    -120,
+    -90,
+    -60,
+    -30,
+    30,
+    60,
+    90,
+    120,
+    150
+  ],
+  "metrics": {
+    "episodes": 8,
+    "randomization_level": 0.5,
+    "mean_episode_reward": -14561.13275578248,
+    "mean_reward_per_step": -7.28056637789124,
+    "mean_length": 2000.0,
+    "mean_maintain_max_stable": 92.875,
+    "stable_success_rate": 0.0,
+    "capture_rate": 0.125,
+    "mean_abs_theta": 3.336732202913484,
+    "mean_abs_theta_dot": 2.248643537467604,
+    "mean_abs_alpha": 1.8682271567505646,
+    "mean_abs_alpha_dot": 7.831666787635847,
+    "mean_abs_pwm": 119.99625
+  }
+}

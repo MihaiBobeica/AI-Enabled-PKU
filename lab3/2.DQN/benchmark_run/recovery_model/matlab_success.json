@@ -1,0 +1,6 @@
+{
+  "step": 991935,
+  "episode": 496,
+  "recent_mean_maintain": 1415.7,
+  "model": "runs/dqn_matlab_repro_2m_then_dr_20260719_224320/recovery_model/matlab_success_snapshot.pt"
+}

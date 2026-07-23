@@ -1,0 +1,20 @@
+{
+  "episodes": 3,
+  "randomization_level": 0.0,
+  "mean_episode_reward": 16242.677911823374,
+  "mean_reward_per_step": 8.121338955911687,
+  "mean_length": 2000.0,
+  "mean_maintain_max_stable": 1788.6666666666667,
+  "stable_success_rate": 1.0,
+  "capture_rate": 1.0,
+  "mean_abs_theta": 1.9043311851347038,
+  "mean_abs_theta_dot": 1.4648015765866056,
+  "mean_abs_alpha": 0.22264419967610927,
+  "mean_abs_alpha_dot": 1.3440863028291572,
+  "mean_abs_pwm": 119.00999999999999,
+  "step": 1000000,
+  "phase": "nominal",
+  "stage_name": "matlab_nominal_reproduction",
+  "training_level": 0.0,
+  "eval_randomization_level": 0.0
+}
