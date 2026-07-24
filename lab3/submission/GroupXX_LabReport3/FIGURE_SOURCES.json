@@ -1,0 +1,33 @@
+{
+  "output": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\submission\\GroupXX_LabReport3",
+  "sources": {
+    "DQN": {
+      "run": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\dqn_20260722_195223",
+      "sim": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\results\\software\\DQN_SIM_R06.png",
+      "hw": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\results\\hardware\\DQN_HW_R01.png"
+    },
+    "PPO": {
+      "run": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\3.PPO\\train\\best_run_long\\run",
+      "sim": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\3.PPO\\results\\software\\PPO_SIM_R07.png",
+      "hw": "MISSING"
+    },
+    "TD3": {
+      "run": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\4.TD3\\train\\runs\\td3_rip_original_2m_then_dr_20260722_200150",
+      "sim": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\4.TD3\\results\\software\\TD3_SIM_R01.png",
+      "hw": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\4.TD3\\results\\hardware\\TD3_HW_R04.png"
+    }
+  },
+  "figures": [
+    "DQN_evaluation_curve.png",
+    "DQN_reward_curve.png",
+    "PPO_evaluation_curve.png",
+    "PPO_reward_curve.png",
+    "TD3_evaluation_curve.png",
+    "TD3_reward_curve.png",
+    "DQN_HW_representative.png",
+    "DQN_SIM_representative.png",
+    "PPO_SIM_representative.png",
+    "TD3_HW_representative.png",
+    "TD3_SIM_representative.png"
+  ]
+}
