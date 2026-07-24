@@ -1,0 +1,290 @@
+{
+  "ALGORITHM_NAME": "PPO",
+  "MODE": "train",
+  "EVAL_MODEL_PATH": "",
+  "RUN": {
+    "experiment_name": "search_ppo_long_t0031_20260723_211354",
+    "root_log_dir": "./runs",
+    "seed": 73,
+    "prefer_local_stable_baselines3": true,
+    "torch_deterministic": false,
+    "torch_num_threads": 2,
+    "device": "cpu",
+    "vec_env_type": "dummy"
+  },
+  "ENV": {
+    "env_id": "RIPSim2RealBalance-v0",
+    "physical_dt": 0.005,
+    "action_repeat": 1,
+    "max_physical_steps": 3000,
+    "action_type": "continuous",
+    "pwm_limit": 255.0,
+    "observation_type": "trig_hist4_act4",
+    "clip_velocity_in_obs": true,
+    "init_mode": "balance_random_small",
+    "init_theta_mean_deg": 0.0,
+    "init_theta_std_deg": 3.0,
+    "init_theta_dot_mean": 0.0,
+    "init_theta_dot_std": 0.0,
+    "init_alpha_mean_deg": 0.0,
+    "init_alpha_std_deg": 5.0,
+    "init_alpha_dot_mean": 0.0,
+    "init_alpha_dot_std": 0.0,
+    "theta_limit": 37.69911184307752,
+    "theta_dot_limit": 45.0,
+    "alpha_dot_limit": 40.0,
+    "terminate_on_alpha_abs_deg": true,
+    "alpha_abs_limit_deg": 45.0,
+    "fixed_noise_enabled": false,
+    "fixed_noise_theta_sigma": 0.0,
+    "fixed_noise_alpha_sigma": 0.0,
+    "fixed_noise_theta_dot_sigma": 0.0,
+    "fixed_noise_alpha_dot_sigma": 0.0,
+    "env_logging_enabled": true,
+    "env_save_step_log": false,
+    "env_flush_every_step": false
+  },
+  "PHYSICAL_PARAMS": {
+    "g": 9.8,
+    "c_theta": 0.025,
+    "c_alpha": 0.001,
+    "k_t": 0.231,
+    "k_b": 0.1875,
+    "k_u": 0.04706,
+    "R": 4.2857,
+    "m1": 0.20625,
+    "m2": 0.15845,
+    "l1cg": 0.080305,
+    "l1": 0.151894,
+    "l2cg": 0.066733,
+    "I1z": 0.00049228,
+    "I2x": 0.00036892,
+    "I2y": 2.3641e-05,
+    "I2z": 0.00036139
+  },
+  "DOMAIN_RANDOMIZATION": {
+    "enabled": true,
+    "dr_initial_level": 0.0,
+    "dr_final_level": 0.8,
+    "dr_curriculum_fraction": 0.2,
+    "param_scale_ranges": {
+      "g_scale": [
+        0.98,
+        1.02
+      ],
+      "m1_scale": [
+        0.9,
+        1.1
+      ],
+      "m2_scale": [
+        0.9,
+        1.1
+      ],
+      "l1_scale": [
+        0.9,
+        1.1
+      ],
+      "l1cg_scale": [
+        0.9,
+        1.1
+      ],
+      "l2cg_scale": [
+        0.9,
+        1.1
+      ],
+      "I1z_scale": [
+        0.9,
+        1.1
+      ],
+      "I2x_scale": [
+        0.9,
+        1.1
+      ],
+      "I2y_scale": [
+        0.9,
+        1.1
+      ],
+      "I2z_scale": [
+        0.9,
+        1.1
+      ],
+      "c_theta_scale": [
+        0.25,
+        3.5
+      ],
+      "c_alpha_scale": [
+        0.25,
+        4.5
+      ],
+      "k_t_scale": [
+        0.9,
+        1.1
+      ],
+      "k_b_scale": [
+        0.9,
+        1.1
+      ],
+      "k_u_scale": [
+        0.9,
+        1.1
+      ],
+      "R_scale": [
+        0.9,
+        1.1
+      ]
+    },
+    "init_theta_std_deg_range": [
+      1.0,
+      8.0
+    ],
+    "init_alpha_std_deg_range": [
+      1.0,
+      12.0
+    ],
+    "init_theta_dot_std_range": [
+      0.0,
+      1.5
+    ],
+    "init_alpha_dot_std_range": [
+      0.0,
+      2.5
+    ],
+    "pwm_limit_scale_range": [
+      0.8,
+      1.05
+    ],
+    "pwm_gain_range": [
+      0.9,
+      1.1
+    ],
+    "pwm_bias_range": [
+      -4.0,
+      4.0
+    ],
+    "pwm_deadzone_range": [
+      0.0,
+      12.0
+    ],
+    "pwm_noise_sigma_range": [
+      0.0,
+      2.0
+    ],
+    "actuator_tau_range": [
+      0.0,
+      0.03
+    ],
+    "action_delay_steps_range": [
+      0,
+      0
+    ],
+    "theta_bias_range": [
+      -0.01,
+      0.01
+    ],
+    "alpha_bias_range": [
+      -0.012,
+      0.012
+    ],
+    "theta_sigma_range": [
+      0.0,
+      0.006
+    ],
+    "alpha_sigma_range": [
+      0.0,
+      0.008
+    ],
+    "theta_dot_sigma_range": [
+      0.0,
+      0.35
+    ],
+    "alpha_dot_sigma_range": [
+      0.0,
+      0.6
+    ],
+    "encoder_quantization_rad_range": [
+      0.0,
+      0.0015
+    ],
+    "use_lpf_velocity_probability": 0.5,
+    "velocity_lpf_range": [
+      0.15,
+      0.45
+    ],
+    "process_theta_dot_sigma_range": [
+      0.0,
+      0.0
+    ],
+    "process_alpha_dot_sigma_range": [
+      0.0,
+      0.0
+    ]
+  },
+  "PPO": {
+    "total_timesteps": 2000000,
+    "n_envs": 8,
+    "n_steps": 1024,
+    "batch_size": 1024,
+    "n_epochs": 5,
+    "learning_rate": 0.0001755834889508841,
+    "lr_schedule": "constant",
+    "gamma": 0.9975,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "target_kl": 0.05,
+    "ent_coef": 0.0006163092363741561,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "normalize_advantage": true,
+    "net_arch_pi": [
+      256,
+      256
+    ],
+    "net_arch_vf": [
+      256,
+      256
+    ],
+    "activation_fn_name": "Tanh",
+    "log_std_init": -0.9,
+    "normalize_obs": true,
+    "normalize_reward": true,
+    "clip_obs": 10.0,
+    "clip_reward": 10.0,
+    "verbose": 0,
+    "progress_bar": false
+  },
+  "REWARD": {
+    "k_cos": 8.0,
+    "k_alpha": 2.0,
+    "k_alpha_dot": 0.015,
+    "k_theta": 0.15,
+    "k_theta_dot": 0.01,
+    "k_action": 0.0005,
+    "alive": 0.25,
+    "angle_penalty_deg": 20.0,
+    "angle_penalty_value": 3.0
+  },
+  "EVAL": {
+    "eval_freq": 250000,
+    "n_eval_episodes": 4,
+    "max_eval_policy_steps": 1500,
+    "checkpoint_freq": 1000000,
+    "save_best_model": true,
+    "eval_randomization_level": 0.75
+  },
+  "SMOKE": {
+    "total_timesteps": 2048,
+    "n_envs": 2,
+    "n_steps": 128,
+    "batch_size": 128,
+    "eval_freq": 1024,
+    "n_eval_episodes": 2,
+    "max_eval_policy_steps": 300,
+    "checkpoint_freq": 1024
+  },
+  "PANEL": {
+    "progress_update_freq": 5000,
+    "auto_save_before_run": true,
+    "window_geometry": "1280x820",
+    "print_train_episodes": false
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "score": 190.9164165825357,
+  "trial": 175,
+  "params": {
+    "learning_rate": 0.0001755834889508841,
+    "ent_coef": 0.0006163092363741561,
+    "target_kl_code": 3
+  },
+  "run_dir": "runs\\search_ppo_t0175_20260722_195008",
+  "updated_at": "2026-07-22T17:50:49+00:00",
+  "is_baseline": false,
+  "extra": {
+    "metrics": {
+      "success_rate": 1.0,
+      "eval_score": 8266.912399787805,
+      "reward_per_step": 8.247292584657668
+    },
+    "budget": 75000,
+    "target_kl": 0.05
+  }
+}

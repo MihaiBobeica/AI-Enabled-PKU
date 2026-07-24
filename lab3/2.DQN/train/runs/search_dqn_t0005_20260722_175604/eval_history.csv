@@ -1,0 +1,5 @@
+global_step,phase,eval_level,mean_reward_per_step,mean_episode_reward,stable_success_rate,capture_rate,mean_maintain_max_stable,mean_length
+10000,nominal,0.0,-14.585550434515591,-5834.220173806236,0.0,0.0,0.0,400.0
+20000,nominal,0.0,-14.374490030866266,-5749.796012346507,0.0,0.0,0.0,400.0
+30000,nominal,0.0,-14.399555640598038,-5759.822256239216,0.0,0.0,0.0,400.0
+40000,randomized,0.5,-14.816900612310752,-5926.7602449243,0.0,0.0,0.0,400.0

@@ -1,0 +1,220 @@
+{
+  "dt": 0.005,
+  "max_steps": 3000,
+  "action_type": "continuous",
+  "discrete_actions": [],
+  "continuous_pwm_limit": 255.0,
+  "observation_type": "trig_hist4_act4",
+  "clip_velocity_in_obs": true,
+  "use_lpf_velocity": false,
+  "velocity_lpf": 0.25,
+  "physical_params": {
+    "g": 9.8,
+    "c_theta": 0.025,
+    "c_alpha": 0.001,
+    "k_t": 0.231,
+    "k_b": 0.1875,
+    "k_u": 0.04706,
+    "R": 4.2857,
+    "m1": 0.20625,
+    "m2": 0.15845,
+    "l1cg": 0.080305,
+    "l1": 0.151894,
+    "l2cg": 0.066733,
+    "I1z": 0.00049228,
+    "I2x": 0.00036892,
+    "I2y": 2.3641e-05,
+    "I2z": 0.00036139
+  },
+  "init_state": {
+    "mode": "balance_random_small",
+    "theta_mean_deg": 0.0,
+    "theta_std_deg": 3.0,
+    "theta_dot_mean": 0.0,
+    "theta_dot_std": 0.0,
+    "alpha_mean_deg": 0.0,
+    "alpha_std_deg": 5.0,
+    "alpha_dot_mean": 0.0,
+    "alpha_dot_std": 0.0,
+    "custom_state": null
+  },
+  "limits": {
+    "theta_limit": 37.69911184307752,
+    "theta_dot_limit": 45.0,
+    "alpha_dot_limit": 40.0,
+    "terminate_on_alpha_abs_deg": true,
+    "alpha_abs_limit_deg": 45.0
+  },
+  "noise": {
+    "enabled": false,
+    "theta_sigma": 0.0,
+    "alpha_sigma": 0.0,
+    "theta_dot_sigma": 0.0,
+    "alpha_dot_sigma": 0.0
+  },
+  "logging": {
+    "enabled": true,
+    "log_dir": "./runs\\search_ppo_long_t0041_20260723_222534\\env_logs",
+    "episode_csv_name": "episode_log.csv",
+    "step_csv_name": "step_log.csv",
+    "episode_jsonl_name": "episode_log.jsonl",
+    "save_step_log": false,
+    "flush_every_step": false,
+    "write_config_json": true
+  },
+  "randomization": {
+    "enabled": true,
+    "level": 0.0,
+    "param_scale_ranges": {
+      "g_scale": [
+        0.98,
+        1.02
+      ],
+      "m1_scale": [
+        0.9,
+        1.1
+      ],
+      "m2_scale": [
+        0.9,
+        1.1
+      ],
+      "l1_scale": [
+        0.9,
+        1.1
+      ],
+      "l1cg_scale": [
+        0.9,
+        1.1
+      ],
+      "l2cg_scale": [
+        0.9,
+        1.1
+      ],
+      "I1z_scale": [
+        0.9,
+        1.1
+      ],
+      "I2x_scale": [
+        0.9,
+        1.1
+      ],
+      "I2y_scale": [
+        0.9,
+        1.1
+      ],
+      "I2z_scale": [
+        0.9,
+        1.1
+      ],
+      "c_theta_scale": [
+        0.25,
+        3.5
+      ],
+      "c_alpha_scale": [
+        0.25,
+        4.5
+      ],
+      "k_t_scale": [
+        0.9,
+        1.1
+      ],
+      "k_b_scale": [
+        0.9,
+        1.1
+      ],
+      "k_u_scale": [
+        0.9,
+        1.1
+      ],
+      "R_scale": [
+        0.9,
+        1.1
+      ]
+    },
+    "init_theta_std_deg_range": [
+      1.0,
+      8.0
+    ],
+    "init_alpha_std_deg_range": [
+      1.0,
+      12.0
+    ],
+    "init_theta_dot_std_range": [
+      0.0,
+      1.5
+    ],
+    "init_alpha_dot_std_range": [
+      0.0,
+      2.5
+    ],
+    "pwm_limit_scale_range": [
+      0.8,
+      1.05
+    ],
+    "pwm_gain_range": [
+      0.9,
+      1.1
+    ],
+    "pwm_bias_range": [
+      -4.0,
+      4.0
+    ],
+    "pwm_deadzone_range": [
+      0.0,
+      12.0
+    ],
+    "pwm_noise_sigma_range": [
+      0.0,
+      2.0
+    ],
+    "actuator_tau_range": [
+      0.0,
+      0.03
+    ],
+    "action_delay_steps_range": [
+      0,
+      0
+    ],
+    "theta_bias_range": [
+      -0.01,
+      0.01
+    ],
+    "alpha_bias_range": [
+      -0.012,
+      0.012
+    ],
+    "theta_sigma_range": [
+      0.0,
+      0.006
+    ],
+    "alpha_sigma_range": [
+      0.0,
+      0.008
+    ],
+    "theta_dot_sigma_range": [
+      0.0,
+      0.35
+    ],
+    "alpha_dot_sigma_range": [
+      0.0,
+      0.6
+    ],
+    "encoder_quantization_rad_range": [
+      0.0,
+      0.0015
+    ],
+    "use_lpf_velocity_probability": 0.5,
+    "velocity_lpf_range": [
+      0.15,
+      0.45
+    ],
+    "process_theta_dot_sigma_range": [
+      0.0,
+      0.0
+    ],
+    "process_alpha_dot_sigma_range": [
+      0.0,
+      0.0
+    ]
+  }
+}

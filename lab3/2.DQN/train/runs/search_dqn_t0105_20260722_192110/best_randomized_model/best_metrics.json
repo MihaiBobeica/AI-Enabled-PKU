@@ -1,0 +1,20 @@
+{
+  "episodes": 2,
+  "randomization_level": 0.5,
+  "mean_episode_reward": -4334.734728170158,
+  "mean_reward_per_step": -10.836836820425393,
+  "mean_length": 400.0,
+  "mean_maintain_max_stable": 0.0,
+  "stable_success_rate": 0.0,
+  "capture_rate": 0.0,
+  "mean_abs_theta": 1.6860971015251087,
+  "mean_abs_theta_dot": 2.977596828228432,
+  "mean_abs_alpha": 2.2980413872729866,
+  "mean_abs_alpha_dot": 6.448951689725436,
+  "mean_abs_pwm": 128.2875,
+  "step": 40000,
+  "phase": "randomized",
+  "stage_name": "smoke_dr_0.10",
+  "training_level": 0.1,
+  "eval_randomization_level": 0.5
+}

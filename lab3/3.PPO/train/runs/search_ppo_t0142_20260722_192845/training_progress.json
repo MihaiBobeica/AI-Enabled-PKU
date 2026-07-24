@@ -1,0 +1,9 @@
+{
+  "algorithm": "PPO",
+  "timesteps": 81920,
+  "total": 75000,
+  "percent": 100.0,
+  "fps": 1960.5063041035016,
+  "elapsed_s": 41.785124500000165,
+  "eta_s": 0.0
+}

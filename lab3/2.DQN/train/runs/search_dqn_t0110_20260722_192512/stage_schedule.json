@@ -1,0 +1,15 @@
+{
+  "names": [
+    "smoke_nominal",
+    "smoke_dr_0.10"
+  ],
+  "levels": [
+    0.0,
+    0.1
+  ],
+  "steps": [
+    30000,
+    10000
+  ],
+  "total": 40000
+}

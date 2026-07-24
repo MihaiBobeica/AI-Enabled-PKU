@@ -1,0 +1,7 @@
+{
+  "DQN": {
+    "use_double_dqn": false,
+    "learning_rate": 0.00043148566788370576,
+    "exploration_decay": 208692.38948074408
+  }
+}

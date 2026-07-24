@@ -1,0 +1,35 @@
+{
+  "score": -9.646318386120171,
+  "trial": 11,
+  "params": {
+    "use_double_dqn": 0,
+    "learning_rate": 0.00043148566788370576,
+    "exploration_decay": 208692.38948074408
+  },
+  "run_dir": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\search_dqn_t0011_20260722_180238",
+  "updated_at": "2026-07-22T16:03:27+00:00",
+  "is_baseline": false,
+  "extra": {
+    "metrics": {
+      "episodes": 2,
+      "randomization_level": 0.5,
+      "mean_episode_reward": -3858.5273544480688,
+      "mean_reward_per_step": -9.646318386120171,
+      "mean_length": 400.0,
+      "mean_maintain_max_stable": 0.0,
+      "stable_success_rate": 0.0,
+      "capture_rate": 0.0,
+      "mean_abs_theta": 2.2231473299797724,
+      "mean_abs_theta_dot": 3.1494827784254573,
+      "mean_abs_alpha": 2.1301516053342215,
+      "mean_abs_alpha_dot": 7.429186753029551,
+      "mean_abs_pwm": 110.6625,
+      "step": 40000,
+      "phase": "randomized",
+      "stage_name": "smoke_dr_0.10",
+      "training_level": 0.1,
+      "eval_randomization_level": 0.5
+    },
+    "budget": 40000
+  }
+}

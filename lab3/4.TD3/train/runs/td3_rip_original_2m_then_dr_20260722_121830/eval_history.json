@@ -1,0 +1,20 @@
+[
+  {
+    "episodes": 5,
+    "mean_reward": -55592.40052000848,
+    "mean_length": 1000.0,
+    "stable_success_rate": 0.0,
+    "capture_rate": 0.0,
+    "termination_rate": 0.0,
+    "mean_abs_theta": 1.6180385487532938,
+    "mean_abs_theta_dot": 9.781114517057341,
+    "mean_abs_alpha": 2.6129425179763297,
+    "mean_abs_alpha_dot": 0.9979323924412679,
+    "mean_abs_pwm": 144.44712568223477,
+    "mean_pwm_abs_norm": 0.9629808378815651,
+    "control_score": -55608.917868997465,
+    "step": 20000,
+    "phase": "nominal",
+    "eval_randomization_level": 0.0
+  }
+]

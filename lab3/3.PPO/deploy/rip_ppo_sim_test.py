@@ -357,29 +357,71 @@ def result_metrics(result: SimulationResult) -> Dict[str, float]:
 def build_result_figure(result: SimulationResult, title_suffix: str = "Hybrid PPO Digital Twin"):
     from matplotlib.figure import Figure
     metrics = result_metrics(result)
-    fig = Figure(figsize=(10.5, 7.6), tight_layout=True); axs = fig.subplots(2, 2)
-    ax_alpha, ax_theta, ax_pwm, ax_mode = axs[0, 0], axs[0, 1], axs[1, 0], axs[1, 1]
-    t = result.time
-    fig.suptitle(f"Rotary Inverted Pendulum {title_suffix}", fontsize=15, fontweight="bold")
-    ax_alpha.plot(t, result.alpha, linewidth=1.6, label=r"$\alpha$"); ax_alpha.axhline(0, linewidth=1, linestyle="--")
-    for s in (-1, 1): ax_alpha.axhline(s * math.radians(15), linewidth=0.8, linestyle=":")
-    ax_alpha.set(title=r"Pendulum Angle $\alpha(t)$", xlabel="Time / s", ylabel=r"$\alpha$ / rad"); ax_alpha.grid(True, linestyle="--", alpha=0.55)
-    idx = stable_phase_start_index(result)
-    if idx is not None: ax_alpha.axvspan(result.time[idx], result.time[-1], alpha=0.10)
+    fig = Figure(figsize=(10.5, 7.6), tight_layout=True)
+    axs = fig.subplots(2, 2)
+    ax_alpha, ax_theta, ax_pwm, ax_hist = axs[0, 0], axs[0, 1], axs[1, 0], axs[1, 1]
+    t, alpha, theta, pwm = result.time, result.alpha, result.theta, result.pwm
+    fig.suptitle(f"Rotary Inverted Pendulum {title_suffix} Response", fontsize=15, fontweight="bold")
+    ax_alpha.plot(t, alpha, linewidth=1.8, label=r"$\alpha$")
+    ax_alpha.axhline(0.0, linewidth=1.0, linestyle="--")
+    for sign in (-1, 1):
+        ax_alpha.axhline(sign * math.radians(15), linewidth=0.8, linestyle=":")
+    ax_alpha.set(title=r"Pendulum Angle $\alpha(t)$", xlabel="Time / s", ylabel=r"$\alpha$ / rad")
+    ax_alpha.grid(True, linestyle="--", linewidth=0.6, alpha=0.55)
     ax_alpha.legend(loc="lower right")
-    ax_theta.plot(t, result.theta, linewidth=1.6, label=r"$\theta$"); ax_theta.axhline(0, linewidth=1, linestyle="--")
-    ax_theta.set(title=r"Rotary Arm Angle $\theta(t)$", xlabel="Time / s", ylabel=r"$\theta$ / rad"); ax_theta.grid(True, linestyle="--", alpha=0.55); ax_theta.legend()
-    ax_pwm.plot(t, result.pwm, linewidth=1.3, label="Applied PWM"); ax_pwm.axhline(0, linewidth=1, linestyle="--")
-    ax_pwm.set(title="Hybrid Control Input", xlabel="Time / s", ylabel="PWM"); ax_pwm.grid(True, linestyle="--", alpha=0.55); ax_pwm.legend()
-    ax_mode.step(t, result.mode, where="post", linewidth=1.5, label="mode"); ax_mode.plot(t, result.blend * 3.0, linewidth=1.0, label="3 × PPO blend")
-    ax_mode.set_yticks([0, 1, 2, 3], ["OFF", "SWING", "BLEND", "PPO"]); ax_mode.set(title="Controller Mode and Blend", xlabel="Time / s"); ax_mode.grid(True, linestyle="--", alpha=0.55); ax_mode.legend()
-    text = (f"stable start: {metrics['stable_start_time']:.3f} s\n" if math.isfinite(metrics["stable_start_time"]) else "stable phase: not reached\n")
-    text += f"stable duration: {metrics['stable_duration']:.3f} s\ncaptures: {int(metrics['capture_count'])}"
-    ax_mode.text(0.98, 0.96, text, transform=ax_mode.transAxes, ha="right", va="top", fontsize=9,
-                 bbox=dict(boxstyle="round,pad=0.35", facecolor="white", alpha=0.85, edgecolor="0.35"))
+    index = stable_phase_start_index(result)
+    if index is None:
+        text = "Stable phase: not reached"
+    else:
+        text = (
+            rf"$\mathrm{{mean}}(|\alpha|)$ = {metrics['alpha_abs_mean']:.6f} rad" "\n"
+            rf"$\mathrm{{std}}(|\alpha|)$ = {metrics['alpha_abs_std']:.6f} rad" "\n"
+            f"stable from t = {metrics['stable_start_time']:.3f} s"
+        )
+        ax_alpha.axvspan(metrics["stable_start_time"], t[-1], alpha=0.10)
+    ax_alpha.text(
+        0.98, 0.96, text, transform=ax_alpha.transAxes, ha="right", va="top", fontsize=9.5,
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="white", alpha=0.85, edgecolor="0.35"),
+    )
+    ax_theta.plot(t, theta, linewidth=1.8, label=r"$\theta$")
+    ax_theta.axhline(0, linewidth=1, linestyle="--")
+    ax_theta.set(title=r"Rotary Arm Angle $\theta(t)$", xlabel="Time / s", ylabel=r"$\theta$ / rad")
+    ax_theta.grid(True, linestyle="--", linewidth=0.6, alpha=0.55)
+    ax_theta.legend(loc="upper right")
+    ax_pwm.plot(t, pwm, linewidth=1.5, label="PWM")
+    ax_pwm.axhline(0, linewidth=1, linestyle="--")
+    ax_pwm.set(title="Control Input PWM(t)", xlabel="Time / s", ylabel="PWM")
+    lim = max(160.0, float(np.max(np.abs(pwm))) * 1.1) if pwm.size else 160.0
+    ax_pwm.set_ylim(-lim, lim)
+    ax_pwm.grid(True, linestyle="--", linewidth=0.6, alpha=0.55)
+    ax_pwm.legend(loc="lower right")
+    if index is not None:
+        ax_pwm.axvspan(metrics["stable_start_time"], t[-1], alpha=0.10)
+        ptext = (
+            rf"$\mathrm{{mean}}(|PWM|)$ = {metrics['pwm_abs_mean']:.3f}" "\n"
+            rf"$\mathrm{{std}}(|PWM|)$ = {metrics['pwm_abs_std']:.3f}"
+        )
+    else:
+        ptext = "Stable phase: not reached"
+    ax_pwm.text(
+        0.98, 0.96, ptext, transform=ax_pwm.transAxes, ha="right", va="top", fontsize=9.5,
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="white", alpha=0.85, edgecolor="0.35"),
+    )
+    if index is None:
+        ax_hist.text(0.5, 0.5, "No final stable phase", transform=ax_hist.transAxes, ha="center", va="center")
+    else:
+        ax_hist.hist(pwm[index:], bins=np.arange(-255, 271, 15), edgecolor="black", linewidth=0.45)
+    ax_hist.axvline(0, linewidth=1, linestyle="--")
+    ax_hist.set_xlim(-255, 255)
+    ax_hist.set(title="Stable-stage PWM Distribution", xlabel="PWM", ylabel="Count")
+    ax_hist.grid(True, linestyle="--", linewidth=0.6, alpha=0.55)
     xmax = max(float(t[-1]), 0.1)
-    for ax in axs.flat:
-        ax.set_xlim(0, xmax); ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False); ax.tick_params(direction="in")
+    for ax in (ax_alpha, ax_theta, ax_pwm):
+        ax.set_xlim(0, xmax)
+    for ax in (ax_alpha, ax_theta, ax_pwm, ax_hist):
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(direction="in")
     return fig
 
 

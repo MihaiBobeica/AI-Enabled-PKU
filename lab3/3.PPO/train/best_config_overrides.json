@@ -1,0 +1,16 @@
+{
+  "PPO": {
+    "learning_rate": 0.0001755834889508841,
+    "ent_coef": 0.0006163092363741561,
+    "target_kl": 0.05,
+    "n_epochs": 5,
+    "clip_range": 0.1,
+    "log_std_init": -0.7,
+    "lr_schedule": "constant",
+    "total_timesteps": 2000000,
+    "n_envs": 16
+  },
+  "DOMAIN_RANDOMIZATION": {
+    "dr_curriculum_fraction": 0.2
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "score": 222.29607490409091,
+  "trial": 24,
+  "params": {
+    "n_epochs": 5,
+    "clip_range": 0.1,
+    "log_std_init": -0.7,
+    "lr_schedule": "constant",
+    "dr_curriculum_fraction": 0.2
+  },
+  "run_dir": "runs\\search_ppo_long_t0024_20260723_195638",
+  "updated_at": "2026-07-23T18:08:18+00:00",
+  "is_baseline": false,
+  "extra": {
+    "metrics": {
+      "late_success": 1.0,
+      "late_score": 12392.30165771804,
+      "late_pwm": 0.06507766692358005,
+      "max_timesteps": 2000000.0
+    },
+    "budget": 2000000,
+    "frozen": {
+      "learning_rate": 0.0001755834889508841,
+      "ent_coef": 0.0006163092363741561,
+      "target_kl": 0.05
+    }
+  }
+}

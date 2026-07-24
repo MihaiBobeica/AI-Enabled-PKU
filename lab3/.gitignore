@@ -1,21 +1,8 @@
 # Extracted course packages live under 1.MPC / 2.DQN / 3.PPO / 4.TD3.
-# Ignore local training outputs and OS/Python junk.
+# Keep training runs/models tracked; ignore only OS/Python junk.
 
-**/runs/
 **/__pycache__/
 **/.DS_Store
 **/*.bak
 **/*.bak.*
 **/__MACOSX/
-
-# Optuna search runtime artifacts (scripts stay tracked)
-**/optuna_study*.db
-**/optuna_study*.db-*
-**/search_results*.csv
-**/BEST*.json
-**/search_state*.json
-**/search_logs*/
-**/best_run*/
-**/figures*/optimization_history.png
-**/figures*/param_importance.png
-**/best_config_overrides*.json

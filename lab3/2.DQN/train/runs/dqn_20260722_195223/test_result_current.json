@@ -1,0 +1,18 @@
+{
+  "variant": "current",
+  "model": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\dqn_20260722_195223\\selected_best_model.pt",
+  "duration_seconds": 30.0,
+  "steps": 6000,
+  "episodes": 3,
+  "randomization_level": 0.5,
+  "mean_reward_per_step": 1.4224618071173372,
+  "total_reward": 8534.770842704023,
+  "stable_success_rate": 0.0,
+  "max_maintain_stable_steps": 339,
+  "mean_abs_alpha": 0.9816124111410448,
+  "mean_abs_alpha_dot": 4.122254157679393,
+  "mean_abs_pwm": 122.125,
+  "result_json": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\dqn_20260722_195223\\test_result_current.json",
+  "trace_csv": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\dqn_20260722_195223\\test_trace_current.csv",
+  "trace_png": "C:\\Users\\kreml\\AI-Enabled-PKU\\lab3\\2.DQN\\train\\runs\\dqn_20260722_195223\\test_trace_current.png"
+}
