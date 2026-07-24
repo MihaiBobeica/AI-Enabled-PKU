@@ -550,7 +550,17 @@ class MainWindow(QtWidgets.QMainWindow):
         if current:
             index=self.port_combo.findData(current)
             if index>=0:self.port_combo.setCurrentIndex(index)
-        self.port_combo.blockSignals(False); return records
+        elif self.port_combo.count()==1:
+            self.port_combo.setCurrentIndex(0)
+        self.port_combo.blockSignals(False)
+        if not records:
+            self.connection_label.setText("No serial ports found. Plug in ST-Link USB, then Refresh now again.")
+            self.status_label.setText("Refresh found 0 ports. Check the USB cable / ST-Link driver, then click Refresh now.")
+        else:
+            selected=self.port_combo.currentData() or records[0].device
+            self.connection_label.setText(f"Ports refreshed ({len(records)}). Selected {selected}. Click Connect.")
+            self.status_label.setText(f"Refresh OK: {[p.device for p in records]}. Select the ST-Link port, then click Connect (Refresh does not open the port).")
+        return records
     def toggle_connection(self):
         if self.connected:self.disconnect_serial(True)
         else:

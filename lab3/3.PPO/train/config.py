@@ -232,6 +232,9 @@ PPO: Dict[str, Any] = {
     "batch_size": 1024,
     "n_epochs": 10,
     "learning_rate": 0.0003,
+    # "constant" keeps Adam LR fixed; "linear" holds base LR for the first 60% of
+    # training then decays linearly to 0 over the last 40% (SB3 progress_remaining).
+    "lr_schedule": "constant",
     "gamma": 0.9975,
     "gae_lambda": 0.95,
     "clip_range": 0.2,
@@ -494,9 +497,24 @@ def build_policy_kwargs() -> Dict[str, Any]:
     }
 
 
+def build_learning_rate():
+    """Return a float or SB3 schedule callable from PPO learning_rate / lr_schedule."""
+    base = float(PPO["learning_rate"])
+    schedule = str(PPO.get("lr_schedule", "constant")).lower()
+    if schedule in ("linear", "linear_last40"):
+        def _lr(progress_remaining: float) -> float:
+            # progress_remaining: 1 at start → 0 at end.
+            if float(progress_remaining) >= 0.4:
+                return base
+            return base * max(float(progress_remaining), 0.0) / 0.4
+
+        return _lr
+    return base
+
+
 def build_ppo_kwargs() -> Dict[str, Any]:
     kwargs = {
-        "learning_rate": float(PPO["learning_rate"]),
+        "learning_rate": build_learning_rate(),
         "n_steps": int(PPO["n_steps"]),
         "batch_size": int(PPO["batch_size"]),
         "n_epochs": int(PPO["n_epochs"]),

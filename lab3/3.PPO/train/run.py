@@ -342,10 +342,39 @@ class DomainRandomizationCurriculumCallback(BaseCallback):
         return True
 
 
+# Optional Optuna trial injected by search_params_long.py for mid-train pruning.
+_OPTUNA_TRIAL: Any = None
+_OPTUNA_RANK_BY_J: bool = False
+
+
+def compute_optuna_j(history: list, current_steps: int, window_frac: float = 0.2) -> float:
+    """Late-window objective: J = 100*success + 0.01*S - 25*pwm_norm."""
+    if not history:
+        return -1e6
+    cutoff = float(current_steps) * (1.0 - float(window_frac))
+    rows = [h for h in history if float(h["timesteps"]) >= cutoff]
+    if not rows:
+        rows = [history[-1]]
+    succ = float(np.mean([float(h["randomized"]["success_rate"]) for h in rows]))
+    score = float(np.mean([float(h["randomized"]["score"]) for h in rows]))
+    pwm = float(np.mean([float(h["randomized"]["mean_abs_pwm_norm"]) for h in rows]))
+    if not np.isfinite(pwm):
+        pwm = 1.0
+    return 100.0 * succ + 0.01 * score - 25.0 * pwm
+
+
 class RIPBalanceEvalCallback(BaseCallback):
     """Evaluate both nominal and randomized balance performance, then save best model."""
 
-    def __init__(self, run_dir: str, eval_nominal_env, eval_random_env, verbose: int = 1):
+    def __init__(
+        self,
+        run_dir: str,
+        eval_nominal_env,
+        eval_random_env,
+        verbose: int = 1,
+        optuna_trial: Any = None,
+        rank_by_j: bool = False,
+    ):
         super().__init__(verbose)
         self.run_dir = run_dir
         self.eval_nominal_env = eval_nominal_env
@@ -356,6 +385,9 @@ class RIPBalanceEvalCallback(BaseCallback):
         self.best_score = -1e18
         self.history = []
         self.last_eval_timestep = 0
+        self.optuna_trial = optuna_trial
+        self.rank_by_j = bool(rank_by_j) or (optuna_trial is not None)
+        self.pruned = False
         ensure_dir(os.path.join(run_dir, "eval_logs"))
         ensure_dir(os.path.join(run_dir, "best_model"))
         self.csv_path = os.path.join(run_dir, "eval_logs", "eval_metrics.csv")
@@ -405,20 +437,39 @@ class RIPBalanceEvalCallback(BaseCallback):
                     f"mean_reward={metrics['mean_reward']:.9g} mean_length={metrics['mean_length']:.9g} "
                     f"mean_abs_alpha={metrics['mean_abs_alpha']:.9g} "
                     f"mean_abs_theta={metrics['mean_abs_theta']:.9g} "
+                    f"mean_abs_pwm_norm={metrics['mean_abs_pwm_norm']:.9g} "
                     f"terminated_rate={metrics['terminated_rate']:.9g}",
                     flush=True,
                 )
 
-        if randomized["score"] > self.best_score:
-            self.best_score = randomized["score"]
+        rank_value = (
+            compute_optuna_j(self.history, int(self.num_timesteps))
+            if self.rank_by_j
+            else float(randomized["score"])
+        )
+        if rank_value > self.best_score:
+            self.best_score = rank_value
             model_path = os.path.join(self.run_dir, "best_model", "best_model")
             self.model.save(model_path)
             vec_norm = self.model.get_vec_normalize_env()
             if vec_norm is not None:
                 vec_norm.save(os.path.join(self.run_dir, "best_model", "vecnormalize.pkl"))
-            print(f"[BEST] saved {model_path}.zip | randomized_score={self.best_score:.3f}")
+            tag = "J" if self.rank_by_j else "randomized_score"
+            print(f"[BEST] saved {model_path}.zip | {tag}={self.best_score:.3f}")
 
         self.plot_history()
+
+        if self.optuna_trial is not None:
+            j = compute_optuna_j(self.history, int(self.num_timesteps))
+            self.optuna_trial.report(float(j), step=int(self.num_timesteps))
+            if self.optuna_trial.should_prune():
+                self.pruned = True
+                if self.verbose:
+                    print(
+                        f"[OPTUNA] pruned at steps={self.num_timesteps} J={j:.4f}",
+                        flush=True,
+                    )
+                return False
         return True
 
     def evaluate(self, env, seed_offset: int) -> Dict[str, float]:
@@ -560,10 +611,14 @@ def train() -> None:
     if os.environ.get("OVERNIGHT_APPLY_BEST") == "1":
         overrides_path = PROJECT_ROOT / "best_config_overrides.json"
         if overrides_path.exists():
-            data = json.loads(overrides_path.read_text(encoding="utf-8")).get("PPO", {})
-            config.PPO.update(data)
+            payload = json.loads(overrides_path.read_text(encoding="utf-8"))
+            ppo_data = payload.get("PPO", payload)
+            config.PPO.update(ppo_data)
+            dr_data = payload.get("DOMAIN_RANDOMIZATION", {})
+            if dr_data:
+                config.DOMAIN_RANDOMIZATION.update(dr_data)
             config.PPO["total_timesteps"] = int(config.PPO.get("total_timesteps", 2_000_000))
-            print(f"[OVERNIGHT] applied {overrides_path.name}: {data}", flush=True)
+            print(f"[OVERNIGHT] applied {overrides_path.name}: PPO={ppo_data} DR={dr_data}", flush=True)
         else:
             print("[OVERNIGHT] missing best_config_overrides.json; using config.py", flush=True)
 
@@ -585,6 +640,14 @@ def train() -> None:
 
     # save_freq is in callback calls, not total timesteps; divide by n_envs.
     save_freq = max(int(config.EVAL["checkpoint_freq"]) // max(int(config.PPO["n_envs"]), 1), 1)
+    eval_cb = RIPBalanceEvalCallback(
+        run_dir,
+        eval_nominal_env,
+        eval_random_env,
+        verbose=1,
+        optuna_trial=_OPTUNA_TRIAL,
+        rank_by_j=_OPTUNA_RANK_BY_J,
+    )
     callbacks = [
         TrainingProgressCallback(run_dir, verbose=0),
         DomainRandomizationCurriculumCallback(verbose=1),
@@ -596,7 +659,7 @@ def train() -> None:
             save_vecnormalize=True,
             verbose=1,
         ),
-        RIPBalanceEvalCallback(run_dir, eval_nominal_env, eval_random_env, verbose=1),
+        eval_cb,
     ]
 
     print("=" * 100)
@@ -612,6 +675,16 @@ def train() -> None:
         callback=CallbackList(callbacks),
         progress_bar=bool(config.PPO.get("progress_bar", False)),
     )
+
+    if bool(getattr(eval_cb, "pruned", False)):
+        train_env.close()
+        eval_nominal_env.close()
+        eval_random_env.close()
+        try:
+            import optuna
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError("Optuna required to raise TrialPruned") from exc
+        raise optuna.TrialPruned(f"pruned during training at J-best={eval_cb.best_score:.4f}")
 
     final_path = os.path.join(run_dir, "final_model")
     model.save(final_path)

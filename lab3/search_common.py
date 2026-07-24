@@ -134,9 +134,15 @@ def load_best_score(best_json: Path) -> Optional[float]:
         return None
 
 
-def create_study(study_name: str, storage_url: str, direction: str = "maximize") -> "optuna.Study":
+def create_study(
+    study_name: str,
+    storage_url: str,
+    direction: str = "maximize",
+    pruner: Any = None,
+) -> "optuna.Study":
     sampler = TPESampler(seed=42)
-    pruner = MedianPruner(n_startup_trials=3, n_warmup_steps=0)
+    if pruner is None:
+        pruner = MedianPruner(n_startup_trials=3, n_warmup_steps=0)
     return optuna.create_study(
         study_name=study_name,
         storage=storage_url,
@@ -266,12 +272,13 @@ def run_timed_study(
     objective: Callable[["optuna.Trial"], float],
     direction: str = "maximize",
     tag: str = "",
+    pruner: Any = None,
 ) -> "optuna.Study":
     state = SearchState(root, hours=hours, resume=resume, tag=tag)
     storage = f"sqlite:///{state.db_path.as_posix()}"
     optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-    study = create_study(study_name, storage, direction=direction)
+    study = create_study(study_name, storage, direction=direction, pruner=pruner)
     enqueue_baseline_if_needed(study, baseline_params)
 
     stop = {"flag": False}
